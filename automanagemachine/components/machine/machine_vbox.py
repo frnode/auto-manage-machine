@@ -19,7 +19,7 @@ class MachineVbox(Machine):
 
     def create(self):
         """
-        TODO
+        Create a new machine
         :return:
         """
         Machine.create(self)

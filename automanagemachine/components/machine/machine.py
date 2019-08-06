@@ -19,12 +19,12 @@ class Machine:
 
     def start(self):
         """
-        TODO
+        Start a machine, basic behavior
         """
         print('Machine is starting...')
 
     def create(self):
         """
-        TODO
+        Create a new machine, basic behavior
         """
         print("Create new " + str.upper(self.api) + " machine...")
