@@ -17,5 +17,4 @@ elif determine_environment == "aws":
 else:
     machine = Machine()
 
-machine.start()
-machine.say_hello()
+machine.create()

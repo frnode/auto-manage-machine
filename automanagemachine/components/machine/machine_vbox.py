@@ -22,4 +22,6 @@ class MachineVbox(Machine):
         TODO
         :return:
         """
-        print("Create new" + self.api + " machine")
+        Machine.create(self)
+
+
