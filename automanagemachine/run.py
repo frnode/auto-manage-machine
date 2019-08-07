@@ -9,8 +9,8 @@ from automanagemachine.components.prerequisites import Prerequisites
 print(cfg['app']['name'] + " | version: " + cfg['app']['version'])
 
 prerequisites = Prerequisites()
-prerequisites.check()
-print(prerequisites.vbox_sdk_get_latest_stable_version())
+prerequisites.check_python()
+prerequisites.vbox_sdk()
 
 determine_environment = cfg['machine']['api']
 
