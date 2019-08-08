@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 # coding: utf-8
 import os
-import pathlib
 import platform
 import shutil
-import subprocess
 import sys
 import urllib.request
 import re
-import importlib
 import zipfile
 from automanagemachine.core import cfg
 
@@ -149,3 +146,4 @@ class Prerequisites:
 
         shutil.move(source_directory, dest_directory)
         shutil.rmtree(os.getcwd() + "/tmp")
+
