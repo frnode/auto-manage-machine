@@ -3,6 +3,7 @@
 import os
 import pathlib
 import platform
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -68,10 +69,11 @@ class Prerequisites:
         TODO
         :return:
         """
-        sdk_dir_exist = os.path.isdir('../vboxapi')
+        sdk_dir_exist = os.path.isdir(os.getcwd() + "/vboxapi")
         if sdk_dir_exist is False:
-            self.__vbox_sdk_download(version)
-            # self.__vbox_sdk_install()
+            file = self.__vbox_sdk_download(version)
+            self.__unzip_file(file)
+            self.__vbox_sdk_install()
 
     def vbox_sdk_get_latest_stable_version(self):
         """
@@ -96,25 +98,34 @@ class Prerequisites:
         TODO
         :return:
         """
+
+        tmp_directory = os.getcwd() + "/tmp"
         __url = "https://download.virtualbox.org/virtualbox/" + version + "/"
         __html = urllib.request.urlopen(__url + "/index.html").read()
         __link = re.search(b'(VirtualBoxSDK-)(.*?)(zip)', __html)
         __link = __link.group().decode()
 
         __url_download = __url + __link
-        # file = urllib.request.urlretrieve(__url_download, './tmp/' + __link)
+
+        if os.path.isdir(tmp_directory) is False:
+            os.mkdir(tmp_directory)
+
+        file = urllib.request.urlretrieve(__url_download, tmp_directory + "/" + __link)
         # # print(file[0])
-        # self.__unzip_file(file[0])
+        return file[0]
         #
-        path_script = os.getcwd() + "/tmp/sdk/installer/"
-        path_script_final = path_script + "vboxapisetup.py install"
 
-        print(path_script)
-
+    def run_python_script(self, command, path_to_run=os.getcwd()):
+        """
+        TODO
+        :param path_to_run:
+        :param command:
+        """
         current_dir = os.getcwd()
-        os.chdir(path_script)
-        os.system(path_script_final)
+        os.chdir(path_to_run)
+        os.system(command)
         os.chdir(current_dir)
+        # TODO: Exception
 
     def __unzip_file(self, file):
         with zipfile.ZipFile(file, 'r') as zip_ref:
@@ -125,3 +136,16 @@ class Prerequisites:
         TODO
         :return:
         """
+        path_script = os.getcwd() + "/tmp/sdk/installer/"
+        path_script_final = path_script + "vboxapisetup.py install"
+        self.run_python_script(path_script_final, path_script)
+
+        source_directory = path_script + "build/lib/vboxapi"
+        dest_directory = os.getcwd() + '/vboxapi/'
+
+        vboxapi_directory = os.getcwd() + "/vboxapi"
+        if os.path.isdir(vboxapi_directory) is True:
+            shutil.rmtree(vboxapi_directory)
+
+        shutil.move(source_directory, dest_directory)
+        shutil.rmtree(os.getcwd() + "/tmp")
