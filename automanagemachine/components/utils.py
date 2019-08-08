@@ -2,6 +2,7 @@
 # coding: utf-8
 import os
 import platform
+import subprocess
 import sys
 
 from automanagemachine.core import logger
@@ -14,9 +15,10 @@ def python_version():
     return platform.python_version()
 
 
-def run_python_script(command, path_to_run=os.getcwd()):
+def run_python_script(command, path_to_run=os.getcwd(), output=False):
     """
     Launch a python script
+    :param output: Output of the command executed
     :param path_to_run: Directory where the script is to be started. Default: current directory
     :param command: Command to launch the script
     """
@@ -34,8 +36,10 @@ def run_python_script(command, path_to_run=os.getcwd()):
         logger.critical(__text_error)
         stop_program()
 
-    os.system(command)  # Run the command
-    # TODO: Need add try ?
+    if output is False:
+        subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    else:
+        subprocess.call(command, shell=True)
 
     try:
         os.chdir(__current_dir)  # Reset execution directory
@@ -45,9 +49,8 @@ def run_python_script(command, path_to_run=os.getcwd()):
         stop_program()
 
 
-def stop_program(text):
+def stop_program():
     """
-    Quit program with specified text
-    :param text: Text display for error
+    Quit program
     """
     sys.exit()
