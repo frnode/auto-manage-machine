@@ -7,7 +7,8 @@ import sys
 import urllib.request
 import re
 import zipfile
-from automanagemachine.core import cfg
+from automanagemachine.core import cfg, logger
+import automanagemachine.utils as utils
 
 
 class Prerequisites:
@@ -16,30 +17,28 @@ class Prerequisites:
     """
 
     def __init__(self):
-        print("Start check prerequisites...")
+        logger.debug('Start check prerequisites...')
+        self.python_version = None
 
-    def check_python(self):
+    def verify(self):
         """
-        Check prerequisites
+        Check and run the prerequisite tests
         """
-        if self.__python_version() == 1:
+        self.__check_python_version()
+
+    def __check_python_version(self):
+        """
+        Check Python version
+        """
+
+        self.python_version = utils.python_version()
+
+        if self.__python_version() >= 3:
             print("Python " + str(self.__python_version_int[0]) + "." + str(self.__python_version_int[1]) +
                   "." + str(self.__python_version_int[2]) + " on " + platform.system())
         else:
             print("You must run the program under Python 3 minimum!")
             # TODO: Exception, stop program
-
-    def __python_version(self):
-        """
-        Check if the python environment is at least version 3
-        :return: Return 1 if it's OK else 0
-        """
-        self.__python_version_int = sys.version_info
-
-        if self.__python_version_int >= (3, 0):
-            return 1  # return 1 if it's ok (Python 3)
-        else:
-            return 0
 
     def vbox_sdk(self):
         """
@@ -111,18 +110,6 @@ class Prerequisites:
         # # print(file[0])
         return file[0]
         #
-
-    def run_python_script(self, command, path_to_run=os.getcwd()):
-        """
-        TODO
-        :param path_to_run:
-        :param command:
-        """
-        current_dir = os.getcwd()
-        os.chdir(path_to_run)
-        os.system(command)
-        os.chdir(current_dir)
-        # TODO: Exception
 
     def __unzip_file(self, file):
         with zipfile.ZipFile(file, 'r') as zip_ref:
