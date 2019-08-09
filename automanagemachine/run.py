@@ -21,3 +21,4 @@ else:
     utils.stop_program()
 
 requirements.verify()
+machine.create(cfg['machine']['name'], cfg['app']['name'], cfg['machine']['environment'])

@@ -67,7 +67,7 @@ class RequirementsVboxSdk(Requirements):
             self.__vbox_sdk_install()
         else:
             logger.info('The API already exists, let\'s continue')
-            utils.stop_program()
+
 
     def __vbox_sdk_get_latest_stable_version(self):
         """

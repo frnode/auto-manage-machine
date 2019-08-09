@@ -29,7 +29,6 @@ class Requirements:
         """
         Check Python version
         """
-
         self.python_version = utils.python_version()
         __minimal_python_version = "3.0.0"
 

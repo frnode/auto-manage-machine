@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
+from automanagemachine.core import logger
 
 
 class Machine:
@@ -9,7 +10,7 @@ class Machine:
 
     def __init__(self):
         self.api = None
-        print('Initialization...')
+        print('Machine initialization...')
 
     def say_hello(self):
         """
@@ -27,4 +28,4 @@ class Machine:
         """
         Create a new machine, basic behavior
         """
-        print("Create new " + str.upper(self.api) + " machine...")
+        logger.info("Create new " + str.upper(self.api) + " machine...")
