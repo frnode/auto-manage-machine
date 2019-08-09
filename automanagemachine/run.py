@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # coding: utf-8
+from automanagemachine.components import utils
+from automanagemachine.components.machine.machine_vbox import MachineVbox
 from automanagemachine.components.requirements.requirements_vbox_sdk import RequirementsVboxSdk
-from automanagemachine.core import cfg
+from automanagemachine.core import cfg, logger
 
 print(cfg['app']['name'] + " | version: " + cfg['app']['version'])
 
@@ -10,12 +12,12 @@ determine_environment = cfg['machine']['api']
 # TODO: Implement others environments
 if determine_environment == "vbox":
     requirements = RequirementsVboxSdk()
-    # machine = MachineVbox()
+    machine = MachineVbox()
 elif determine_environment == "aws":
-    # machine = MachineAws()
-    print("todo")
+    logger.warning("AWS not implemented.")
+    utils.stop_program()
 else:
-    print("todo")
-    # machine = Machine()
+    logger.critical("Not implemented.")
+    utils.stop_program()
 
 requirements.verify()

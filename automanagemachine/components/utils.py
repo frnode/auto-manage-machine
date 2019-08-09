@@ -4,6 +4,7 @@ import os
 import platform
 import subprocess
 import sys
+import zipfile
 
 from automanagemachine.core import logger
 
@@ -45,6 +46,24 @@ def run_python_script(command, path_to_run=os.getcwd(), output=False):
         os.chdir(__current_dir)  # Reset execution directory
     except FileNotFoundError:
         __text_error = "The specified folder can not be found: " + path_to_run
+        logger.critical(__text_error)
+        stop_program()
+
+def unzip_file(file, to):
+    if zipfile.is_zipfile(file) is False:
+        __text_error = "Invalid ZIP file: " + file
+        logger.critical(__text_error)
+        stop_program()
+
+    try:
+        with zipfile.ZipFile(file, 'r') as zip_ref:
+            zip_ref.extractall(to)
+    except zipfile.BadZipFile:
+        __text_error = "Invalid ZIP file: " + file
+        logger.critical(__text_error)
+        stop_program()
+    except zipfile.LargeZipFile:
+        __text_error = "ZIP file size exceeds 4GB: " + file
         logger.critical(__text_error)
         stop_program()
 

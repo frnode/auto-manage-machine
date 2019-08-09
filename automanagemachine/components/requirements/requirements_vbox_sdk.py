@@ -26,7 +26,6 @@ class RequirementsVboxSdk(Requirements):
     def __verify_vbox_sdk(self):
         """
         Prerequisites vbox sdk
-        :return:
         """
         logger.info("Starting the vbox pre-requisite check...")
 
@@ -47,8 +46,12 @@ class RequirementsVboxSdk(Requirements):
                 logger.debug("Validated SDK version: " + __regex_test.group())
                 self.__vbox_sdk_exist(__sdk_version)
 
-
     def __vbox_sdk_version_test_regex(self, str):
+        """
+        Test if the version is valid
+        :param str: Version text
+        :return: Bool
+        """
         return re.search("^\d+(\.\d+){2,2}$", str)
 
     def __vbox_sdk_exist(self, version):
@@ -60,7 +63,7 @@ class RequirementsVboxSdk(Requirements):
         if __sdk_dir_exist is False:
             logger.info('The API does not exist, launching the download and installation process...')
             file = self.__vbox_sdk_download(version)
-            self.__unzip_file(file)
+            utils.unzip_file(file=file, to="./tmp/")
             self.__vbox_sdk_install()
         else:
             logger.info('The API already exists, let\'s continue')
@@ -105,7 +108,7 @@ class RequirementsVboxSdk(Requirements):
             logger.critical(__text_error)
             utils.stop_program()
         except urllib.error.HTTPError as e:
-            __text_error = "Can not access the following URL: " + __vbox_sdk_url_repo_index_html + " (HTTPError code: "\
+            __text_error = "Can not access the following URL: " + __vbox_sdk_url_repo_index_html + " (HTTPError code: " \
                            + str(e.code) + ")"
             logger.critical(__text_error)
             utils.stop_program()
@@ -137,7 +140,7 @@ class RequirementsVboxSdk(Requirements):
             logger.critical(__text_error)
             utils.stop_program()
         except urllib.error.HTTPError as e:
-            __text_error = "Can not access the following URL: " + __url_download + " (HTTPError code: "\
+            __text_error = "Can not access the following URL: " + __url_download + " (HTTPError code: " \
                            + str(e.code) + ")"
             logger.critical(__text_error)
         except urllib.error.ContentTooShortError as e:
@@ -148,24 +151,6 @@ class RequirementsVboxSdk(Requirements):
         logger.info("The file has been downloaded")
 
         return file[0]
-
-    def __unzip_file(self, file):
-        if zipfile.is_zipfile(file) is False:
-            __text_error = "Invalid ZIP file: " + file
-            logger.critical(__text_error)
-            utils.stop_program()
-
-        try:
-            with zipfile.ZipFile(file, 'r') as zip_ref:
-                zip_ref.extractall("./tmp/")
-        except zipfile.BadZipFile:
-            __text_error = "Invalid ZIP file: " + file
-            logger.critical(__text_error)
-            utils.stop_program()
-        except zipfile.LargeZipFile:
-            __text_error = "ZIP file size exceeds 4GB: " + file
-            logger.critical(__text_error)
-            utils.stop_program()
 
     def __vbox_sdk_install(self):
         """
