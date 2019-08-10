@@ -4,6 +4,7 @@ import os
 import platform
 import subprocess
 import sys
+import uuid
 import zipfile
 
 from automanagemachine.core import logger
@@ -49,6 +50,7 @@ def run_python_script(command, path_to_run=os.getcwd(), output=False):
         logger.critical(__text_error)
         stop_program()
 
+
 def unzip_file(file, to):
     if zipfile.is_zipfile(file) is False:
         __text_error = "Invalid ZIP file: " + file
@@ -67,6 +69,14 @@ def unzip_file(file, to):
         logger.critical(__text_error)
         stop_program()
 
+
+def generate_random_str(length=6):
+    """
+    Generate a string of random characters
+    :param length: Length of the string
+    :return: String of characters
+    """
+    return uuid.uuid4().hex[:length].upper()
 
 def stop_program():
     """
