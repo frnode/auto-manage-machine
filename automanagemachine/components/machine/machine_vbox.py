@@ -58,8 +58,8 @@ class MachineVbox(Machine):
         :param name: Base name
         :return: Base name with a random string
         """
-        name = name + "_" + utils.generate_random_str(10)
-        __machine_exist = self.__exist(name)
+        __generated_name = name + "_" + utils.generate_random_str(10)
+        __machine_exist = self.__exist(__generated_name)
 
         if __machine_exist is True:
             return self.__generate_name(name)
