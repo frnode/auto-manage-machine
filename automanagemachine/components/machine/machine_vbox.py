@@ -3,6 +3,8 @@
 import re
 
 import virtualbox
+from virtualbox.library import VBoxErrorObjectNotFound, VBoxErrorInvalidObjectState, VBoxErrorFileError, \
+    OleErrorInvalidarg
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
@@ -39,8 +41,27 @@ class MachineVbox(Machine):
             name = self.__generate_name(name)
             logger.info("Generating a new name: " + name)
 
-        __machine = self.vbox.create_machine("", name, [machine_group], os, "")
-        self.vbox.register_machine(__machine)
+        try:
+            __machine = self.vbox.create_machine("", name, [machine_group], os, "")
+        except VBoxErrorObjectNotFound:
+            logger.critical("The operating system of the machine is invalid")
+            utils.stop_program()
+        except VBoxErrorFileError:
+            logger.critical("Resulting settings file name is invalid or the settings file already exists or could not "
+                            "be created due to an I/O error.")
+            utils.stop_program()
+        except OleErrorInvalidarg:
+            logger.critical("Invalid machine name, or null group")
+            utils.stop_program()
+
+        try:
+            self.vbox.register_machine(__machine)
+        except (VBoxErrorObjectNotFound, VBoxErrorInvalidObjectState):
+            logger.critical("Could not create machine")
+            utils.stop_program()
+
+
+
 
     def __exist(self, name):
         """
