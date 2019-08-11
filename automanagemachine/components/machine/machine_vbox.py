@@ -54,14 +54,21 @@ class MachineVbox(Machine):
             logger.critical("Invalid machine name, or null group")
             utils.stop_program()
 
+        logger.info("Set machine parameters...")
+
+        __machine.memory_size = int(cfg['machine']['ram'])
+        __machine.memory_balloon_size = int(cfg['machine']['memory_balloon_size'])
+        __machine.cpu_count = int(cfg['machine']['cpu'])
+        __machine.cpu_execution_cap = int(cfg['machine']['cpu_execution_cap'])
+
+        logger.info("Parameters set successfully, saving...")
+        __machine.save_settings()
+
         try:
             self.vbox.register_machine(__machine)
         except (VBoxErrorObjectNotFound, VBoxErrorInvalidObjectState):
             logger.critical("Could not create machine")
             utils.stop_program()
-
-
-
 
     def __exist(self, name):
         """
