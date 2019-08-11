@@ -52,16 +52,16 @@ class MachineVbox(Machine):
                 return True
         return False
 
-    def __generate_name(self, name):
+    def __generate_name(self, original_name):
         """
         Generate a name from a base name
         :param name: Base name
         :return: Base name with a random string
         """
-        __generated_name = name + "_" + utils.generate_random_str(10)
+        __generated_name = original_name + "_" + utils.generate_random_str(10)
         __machine_exist = self.__exist(__generated_name)
 
         if __machine_exist is True:
-            return self.__generate_name(name)
+            return self.__generate_name(original_name)
 
-        return name
+        return __generated_name

@@ -10,7 +10,7 @@ class Machine:
 
     def __init__(self):
         self.api = None
-        print('Machine initialization...')
+        logger.info("Machine initialization...")
 
     def say_hello(self):
         """
