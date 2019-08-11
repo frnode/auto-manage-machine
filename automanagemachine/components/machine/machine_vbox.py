@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
+import os
 import re
 
 import virtualbox
@@ -27,12 +28,13 @@ class MachineVbox(Machine):
         """
         print('Start vbox machine')
 
-    def create(self, name, machine_group, os):
+    def create(self, name, machine_group, machine_os):
         """
         Create a new machine
         """
         Machine.create(self)
-        logger.info("Machine settings: Name: '" + name + "' - Group: '" + machine_group + "' - OS: '" + os + "'")
+        logger.info(
+            "Machine settings: Name: '" + name + "' - Group: '" + machine_group + "' - OS: '" + machine_os + "'")
 
         __machine_exist = self.__exist(name)
 
@@ -42,7 +44,7 @@ class MachineVbox(Machine):
             logger.info("Generating a new name: " + name)
 
         try:
-            __machine = self.vbox.create_machine("", name, [machine_group], os, "")
+            __machine = self.vbox.create_machine("", name, [machine_group], machine_os, "")
         except VBoxErrorObjectNotFound:
             logger.critical("The operating system of the machine is invalid")
             utils.stop_program()
@@ -71,7 +73,7 @@ class MachineVbox(Machine):
             utils.stop_program()
 
         __location = virtualbox.library.ISystemProperties.default_machine_folder.fget(self.vbox.system_properties) + \
-                     "/" + machine_group + "/" + name + "/"
+                     machine_group + "/" + name + "/"
 
         __medium = self.vbox.create_medium(format_p="", location=__location,
                                            access_mode=virtualbox.library.AccessMode(2),
@@ -87,6 +89,12 @@ class MachineVbox(Machine):
 
         __controller = __vm.add_storage_controller("SATA", virtualbox.library.StorageBus(2))
         __vm.attach_device(__controller.name, 0, 0, __medium.device_type, __medium)
+
+        __iso_file = os.getcwd() + "/data/isos/" + cfg['machine']['iso']
+        __dvd_medium = self.vbox.open_medium(__iso_file, virtualbox.library.DeviceType(2),
+                                             virtualbox.library.AccessMode(1),
+                                             True)
+        __vm.attach_device(__controller.name, 1, 0, __dvd_medium.device_type, __dvd_medium)
 
         __vm.save_settings()
         # close session
