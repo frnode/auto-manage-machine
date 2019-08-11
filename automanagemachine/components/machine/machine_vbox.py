@@ -4,7 +4,7 @@ import re
 
 import virtualbox
 from virtualbox.library import VBoxErrorObjectNotFound, VBoxErrorInvalidObjectState, VBoxErrorFileError, \
-    OleErrorInvalidarg
+    OleErrorInvalidarg, IMedium, ISystemProperties, IMediumFormat, AccessMode, DeviceType
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
@@ -69,6 +69,28 @@ class MachineVbox(Machine):
         except (VBoxErrorObjectNotFound, VBoxErrorInvalidObjectState):
             logger.critical("Could not create machine")
             utils.stop_program()
+
+        __location = virtualbox.library.ISystemProperties.default_machine_folder.fget(self.vbox.system_properties) + \
+           "/" + machine_group + "/" + name + "/"
+        logger.critical(__location)
+        __medium = self.vbox.create_medium(format_p="", location=__location,
+                                           access_mode=virtualbox.library.AccessMode(2),
+                                           a_device_type_type=virtualbox.library.DeviceType(3))
+        __hard_drive_bytes = int(cfg['machine']['hard_drive_gb']) * 1024 * 1024 * 1024
+        __progress = __medium.create_base_storage(__hard_drive_bytes, [])
+        __progress.wait_for_completion(50000)
+
+        __session = virtualbox.Session()
+        __machine.lock_machine(__session, virtualbox.library.LockType(1))
+
+        __vm = __session.machine
+
+        __controller = __vm.add_storage_controller("SATA", virtualbox.library.StorageBus(2))
+        __vm.attach_device(__controller.name, 0, 0, __medium.device_type, __medium)
+
+        __vm.save_settings()
+        # close session
+        __session.unlock_machine()
 
     def __exist(self, name):
         """

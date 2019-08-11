@@ -108,7 +108,7 @@ class RequirementsVboxSdk(Requirements):
             logger.critical(__text_error)
             utils.stop_program()
         except urllib.error.HTTPError as e:
-            __text_error = "Can not access the following URL: " + __vbox_sdk_url_repo_index_html + " (HTTPError code: " \
+            __text_error = "Can not access the following URL: " + __vbox_sdk_url_repo_index_html + " (HTTPError code: "\
                            + str(e.code) + ")"
             logger.critical(__text_error)
             utils.stop_program()
