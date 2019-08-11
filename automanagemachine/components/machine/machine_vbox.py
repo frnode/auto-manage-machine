@@ -72,7 +72,7 @@ class MachineVbox(Machine):
 
         __location = virtualbox.library.ISystemProperties.default_machine_folder.fget(self.vbox.system_properties) + \
                      "/" + machine_group + "/" + name + "/"
-        logger.critical(__location)
+
         __medium = self.vbox.create_medium(format_p="", location=__location,
                                            access_mode=virtualbox.library.AccessMode(2),
                                            a_device_type_type=virtualbox.library.DeviceType(3))
