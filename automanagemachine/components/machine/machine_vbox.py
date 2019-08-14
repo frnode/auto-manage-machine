@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # coding: utf-8
 import os
-import re
 
 import virtualbox
-from virtualbox.library import VBoxErrorObjectNotFound, VBoxErrorInvalidObjectState, VBoxErrorFileError, \
-    OleErrorInvalidarg, IMedium, ISystemProperties, IMediumFormat, AccessMode, DeviceType
+from virtualbox.library import OleErrorInvalidarg, VBoxErrorFileError, VBoxErrorInvalidObjectState, \
+    VBoxErrorObjectNotFound, VBoxErrorNotSupported, VBoxErrorIprtError, VBoxErrorXmlError, OleErrorAccessdenied, \
+    OleErrorUnexpected, VBoxErrorVmError, VBoxErrorObjectInUse, VBoxErrorInvalidVmState
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
@@ -31,6 +31,9 @@ class MachineVbox(Machine):
     def create(self, name, machine_group, machine_os):
         """
         Create a new machine
+        :param name:
+        :param machine_group:
+        :param machine_os:
         """
         Machine.create(self)
         logger.info(
@@ -64,7 +67,17 @@ class MachineVbox(Machine):
         __machine.cpu_execution_cap = int(cfg['machine']['cpu_execution_cap'])
 
         logger.info("Parameters set successfully, saving...")
-        __machine.save_settings()
+        try:
+            __machine.save_settings()
+        except VBoxErrorFileError:
+            logger.critical("Settings file not accessible")
+            utils.stop_program()
+        except VBoxErrorXmlError:
+            logger.critical("Could not parse the settings file")
+            utils.stop_program()
+        except OleErrorAccessdenied:
+            logger.critical("Modification request refused")
+            utils.stop_program()
 
         try:
             self.vbox.register_machine(__machine)
@@ -75,35 +88,133 @@ class MachineVbox(Machine):
         __location = virtualbox.library.ISystemProperties.default_machine_folder.fget(self.vbox.system_properties) + \
                      machine_group + "/" + name + "/"
 
-        __medium = self.vbox.create_medium(format_p="", location=__location,
-                                           access_mode=virtualbox.library.AccessMode(2),
-                                           a_device_type_type=virtualbox.library.DeviceType(3))
+        try:
+            __medium = self.vbox.create_medium(format_p="", location=__location,
+                                               access_mode=virtualbox.library.AccessMode(2),
+                                               a_device_type_type=virtualbox.library.DeviceType(3))
+        except VBoxErrorObjectNotFound:
+            logger.critical("Invalid disk identifier")
+            utils.stop_program()
+        except VBoxErrorFileError:
+            logger.critical("Invalid disk location")
+            utils.stop_program()
+
         __hard_drive_bytes = int(cfg['machine']['hard_drive_gb']) * 1024 * 1024 * 1024
-        __progress = __medium.create_base_storage(__hard_drive_bytes, [])
-        __progress.wait_for_completion(50000)
+
+        try:
+            __progress = __medium.create_base_storage(__hard_drive_bytes, [])
+            __progress.wait_for_completion(50000)
+        except VBoxErrorNotSupported:
+            logger.critical("The variant of storage creation operation is not supported")
+            utils.stop_program()
+        except VBoxErrorIprtError:
+            logger.critical("Failed to wait for task completion")
+            utils.stop_program()
 
         __session = virtualbox.Session()
-        __machine.lock_machine(__session, virtualbox.library.LockType(1))
+
+        try:
+            __machine.lock_machine(__session, virtualbox.library.LockType(1))
+        except OleErrorUnexpected:
+            logger.critical("The machine is not registered")
+            utils.stop_program()
+        except OleErrorAccessdenied:
+            logger.critical("Refused access, check rights")
+            utils.stop_program()
+        except VBoxErrorInvalidObjectState:
+            logger.critical("Session already open or being opened")
+            utils.stop_program()
+        except VBoxErrorVmError:
+            logger.critical("Failed to assign machine to session")
+            utils.stop_program()
 
         __vm = __session.machine
 
-        __controller = __vm.add_storage_controller("SATA", virtualbox.library.StorageBus(2))
-        __vm.attach_device(__controller.name, 0, 0, __medium.device_type, __medium)
+        try:
+            __controller = __vm.add_storage_controller("SATA", virtualbox.library.StorageBus(2))
+        except VBoxErrorObjectInUse:
+            logger.critical("A storage controller with given name exists already: " + __controller.name)
+            utils.stop_program()
+        except OleErrorInvalidarg:
+            logger.critical("Invalid controller type")
+            utils.stop_program()
+
+        try:
+            __vm.attach_device(__controller.name, 0, 0, __medium.device_type, __medium)
+        except OleErrorInvalidarg:
+            logger.critical("SATA device, SATA port, IDE port or IDE slot out of range, or file or UUID not found")
+            utils.stop_program()
+        except VBoxErrorInvalidObjectState:
+            logger.critical("Machine must be registered before media can be attached")
+            utils.stop_program()
+        except VBoxErrorInvalidVmState:
+            logger.critical("Invalid machine state")
+            utils.stop_program()
+        except VBoxErrorObjectInUse:
+            logger.critical("A medium is already attached to this or another virtual machine")
+            utils.stop_program()
 
         __iso_file = os.getcwd() + "/data/isos/" + cfg['machine']['iso']
-        __dvd_medium = self.vbox.open_medium(__iso_file, virtualbox.library.DeviceType(2),
-                                             virtualbox.library.AccessMode(1),
-                                             True)
-        __vm.attach_device(__controller.name, 1, 0, __dvd_medium.device_type, __dvd_medium)
 
-        __vm.save_settings()
-        # close session
-        __session.unlock_machine()
+        try:
+            __dvd_medium = self.vbox.open_medium(__iso_file, virtualbox.library.DeviceType(2),
+                                                 virtualbox.library.AccessMode(1),
+                                                 True)
+        except VBoxErrorFileError:
+            logger.critical("Invalid medium storage file location or could not find the medium at the specified "
+                            "location: " + __iso_file)
+            utils.stop_program()
+        except VBoxErrorIprtError:
+            logger.critical("Could not get medium storage format")
+            utils.stop_program()
+        except OleErrorInvalidarg:
+            logger.critical("Invalid medium storage format")
+            utils.stop_program()
+        except VBoxErrorInvalidObjectState:
+            logger.critical("Medium has already been added to a media registry")
+            utils.stop_program()
+
+        try:
+            __vm.attach_device(__controller.name, 1, 0, __dvd_medium.device_type, __dvd_medium)
+        except OleErrorInvalidarg:
+            logger.critical("SATA device, SATA port, IDE port or IDE slot out of range, or file or UUID not found")
+            utils.stop_program()
+        except VBoxErrorInvalidObjectState:
+            logger.critical("SATA device, SATA port, IDE port or IDE slot out of range, or file or UUID not found")
+            utils.stop_program()
+        except VBoxErrorInvalidObjectState:
+            logger.critical("Machine must be registered before media can be attached")
+            utils.stop_program()
+        except VBoxErrorInvalidVmState:
+            logger.critical("Invalid machine state" + __machine.state)
+            utils.stop_program()
+        except VBoxErrorObjectInUse:
+            logger.critical("A medium is already attached to this or another virtual machine")
+            utils.stop_program()
+
+        try:
+            __vm.save_settings()
+        except VBoxErrorFileError:
+            logger.critical("Settings file not accessible")
+            utils.stop_program()
+        except VBoxErrorXmlError:
+            logger.critical("Could not parse the settings file")
+            utils.stop_program()
+        except OleErrorAccessdenied:
+            logger.critical("Modification request refused")
+            utils.stop_program()
+
+        try:
+            __session.unlock_machine()
+        except OleErrorUnexpected:
+            logger.critical("Session is not locked")
+            utils.stop_program()
+
 
     def __exist(self, name):
         """
-        :param name: Name of machine
         :return: Bool
+        :param name: Name of machine
         """
         for __vm_name in self.vbox.machines:
             if str(__vm_name) == name:
@@ -113,7 +224,7 @@ class MachineVbox(Machine):
     def __generate_name(self, original_name):
         """
         Generate a name from a base name
-        :param name: Base name
+        :param original_name: Base name
         :return: Base name with a random string
         """
         __generated_name = original_name + "_" + utils.generate_random_str(10)

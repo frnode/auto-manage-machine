@@ -172,18 +172,18 @@ class RequirementsVboxSdk(Requirements):
             logger.warning("Deleting the folder: " + __vboxapi_directory)
             try:
                 shutil.rmtree(__vboxapi_directory)
-            except shutil.Error as e:
+            except shutil.Error:
                 logger.warning("Can remove the folder: " + __vboxapi_directory)
 
         try:
             shutil.move(__source_directory, __dest_directory)
-        except shutil.Error as e:
+        except shutil.Error:
             logger.warning("Can not move the folder: " + __source_directory + " to " + __dest_directory)
 
         __tmp_folder = os.getcwd() + "/tmp"
         try:
             shutil.rmtree(__tmp_folder)
-        except shutil.Error as e:
+        except shutil.Error:
             logger.warning("Can remove the folder: " + __tmp_folder)
 
         logger.info("The VBOX API has been successfully installed: " + __dest_directory)
