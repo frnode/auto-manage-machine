@@ -176,7 +176,7 @@ class MachineVbox(Machine):
 
         try:
             __vm.attach_device(__controller.name, 1, 0, __dvd_medium.device_type, __dvd_medium)
-        except (OleErrorInvalidarg, VBoxErrorInvalidObjectState):
+        except OleErrorInvalidarg:
             logger.critical("SATA device, SATA port, IDE port or IDE slot out of range, or file or UUID not found")
             utils.stop_program()
         except VBoxErrorInvalidObjectState:
