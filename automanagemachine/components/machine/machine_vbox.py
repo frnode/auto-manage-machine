@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # coding: utf-8
 import os
+import time
 
 import virtualbox
 from virtualbox.library import OleErrorInvalidarg, VBoxErrorFileError, VBoxErrorInvalidObjectState, \
     VBoxErrorObjectNotFound, VBoxErrorNotSupported, VBoxErrorIprtError, VBoxErrorXmlError, OleErrorAccessdenied, \
-    OleErrorUnexpected, VBoxErrorVmError, VBoxErrorObjectInUse, VBoxErrorInvalidVmState
+    OleErrorUnexpected, VBoxErrorVmError, VBoxErrorObjectInUse, VBoxErrorInvalidVmState, IUnattended
+from virtualbox.library_ext import IMachine
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
@@ -22,11 +24,46 @@ class MachineVbox(Machine):
         self.vbox = virtualbox.VirtualBox()
         self.api = "vbox"
 
-    def start(self):
+    def start(self, uuid):
         """
         TODO
         """
-        print('Start vbox machine')
+        logger.info('Start vbox machine: ' + uuid)
+        __vm = self.__get_vm_by_uuid(uuid)
+        __vbox = virtualbox.VirtualBox()
+        __session = virtualbox.Session()
+        __progress = __vm.launch_vm_process(__session, 'gui', '')
+        __progress.wait_for_completion(5000)
+
+        time.sleep(10)
+        __session.console.keyboard.put_keys(
+            press_keys=["DOWN", "DOWN", "ENTER", "DOWN", "DOWN", "DOWN", "DOWN", "DOWN", "DOWN", "ENTER"])
+        time.sleep(60)
+        __session.console.keyboard.put_keys(list(cfg['machine']['preseed']))
+        logger.warning("Keyboard sended")
+        __session.unlock_machine()
+        return __vm
+
+    def test(self):
+        __ova_file = os.getcwd() + "/data/ova/" + cfg['machine']['ova']
+        __test = self.vbox.create_appliance()
+        __test.read(__ova_file)
+        __test.interpret()
+        __desc = __test.find_description("Debian_10_64")
+        __desc.set_name("test")
+        __desc.set_
+        __test.import_machines()
+
+
+    def run_install(self, machine):
+        __iso_file = os.getcwd() + "/data/isos/" + cfg['machine']['iso']
+
+        __installer = self.vbox.create_unattended_installer()
+        __installer.iso_path = __iso_file
+        __installer.machine = IMachine(machine)
+        __installer.prepare()
+        __installer.construct_media()
+        __installer.reconfigure_vm()
 
     def create(self, name, machine_group, machine_os):
         """
@@ -45,6 +82,7 @@ class MachineVbox(Machine):
             logger.warning("The name of the machine already exists: " + name)
             name = self.__generate_name(name)
             logger.info("Generating a new name: " + name)
+        # __installer.detect_iso_os()
 
         try:
             __machine = self.vbox.create_machine("", name, [machine_group], machine_os, "")
@@ -175,7 +213,7 @@ class MachineVbox(Machine):
             utils.stop_program()
 
         try:
-            __vm.attach_device(__controller.name, 1, 0, __dvd_medium.device_type, __dvd_medium)
+            __vm.attach_device(__controller.name, 1, 0, __medium.device_type, __dvd_medium)
         except OleErrorInvalidarg:
             logger.critical("SATA device, SATA port, IDE port or IDE slot out of range, or file or UUID not found")
             utils.stop_program()
@@ -207,6 +245,7 @@ class MachineVbox(Machine):
             logger.critical("Session is not locked")
             utils.stop_program()
 
+        return __machine
 
     def __exist(self, name):
         """
@@ -231,3 +270,8 @@ class MachineVbox(Machine):
             return self.__generate_name(original_name)
 
         return __generated_name
+
+    def __get_vm_by_uuid(self, uuid):
+        __vbox = virtualbox.VirtualBox()
+        __vm = __vbox.find_machine(uuid)
+        return __vm

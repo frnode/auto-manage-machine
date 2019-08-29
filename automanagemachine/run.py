@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # coding: utf-8
+import os
+import time
+
+import virtualbox
+
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine_vbox import MachineVbox
 from automanagemachine.components.requirements.requirements_vbox_sdk import RequirementsVboxSdk
@@ -21,4 +26,8 @@ else:
     utils.stop_program()
 
 requirements.verify()
-machine.create(cfg['machine']['name'], "/" + cfg['app']['name'], cfg['machine']['environment'])
+# vm = machine.create(cfg['machine']['name'], "/" + cfg['app']['name'], cfg['machine']['environment'])
+machine.test()
+# machine.test()
+# vm = machine.create_using_ova(cfg['machine']['name'])
+#machine.start(cfg['machine']['name'])
