@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 # coding: utf-8
-import os
 import platform
-import shutil
-import urllib.request
-import re
-import zipfile
+
+from automanagemachine.components.machine.machine_vbox import MachineVbox
 from automanagemachine.core import cfg, logger
 import automanagemachine.components.utils as utils
 
@@ -17,7 +14,11 @@ class Requirements:
 
     def __init__(self):
         logger.info('Starting the common pre-requisite check...')
-        self.python_version = None
+        self.python_version = utils.python_version()
+        self.python_minimal_version = "3.0.0"
+        self.virtual_environment_txt = cfg['machine']['virtual_environment']
+        self.virtual_environment = None
+        self.machine = None
 
     def verify(self):
         """
@@ -25,16 +26,19 @@ class Requirements:
         """
         self.__minimal_python_version()
 
+    def run(self):
+        """
+        Run process requirements
+        """
+        self.verify()
+
     def __minimal_python_version(self):
         """
         Check Python version
         """
-        self.python_version = utils.python_version()
-        __minimal_python_version = "3.0.0"
-
-        logger.info("Check if Python is in minimum " + __minimal_python_version + " version")
-        if utils.python_version() >= __minimal_python_version:
-            logger.info("Good! Python " + utils.python_version() + " on " + platform.system())
+        logger.info("Check if Python is in minimum " + self.python_minimal_version + " version")
+        if self.python_version >= self.python_minimal_version:
+            logger.info("Good! Python " + self.python_version + " on " + platform.system())
         else:
             __text_error = "You must run the program under Python 3 minimum!"
             logger.critical(__text_error)

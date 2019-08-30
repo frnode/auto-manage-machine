@@ -65,7 +65,13 @@ class MachineVbox(Machine):
         __installer.construct_media()
         __installer.reconfigure_vm()
 
-    def create(self, name, machine_group, machine_os):
+    def create_with_ova(self):
+        var = None
+
+    def create(self):
+        self.create_with_ova()
+
+    def create_old(self, name, machine_group, machine_os):
         """
         Create a new machine
         :param name:

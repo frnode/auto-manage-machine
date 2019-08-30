@@ -10,6 +10,9 @@ class Machine:
 
     def __init__(self):
         self.api = None
+        self.cpu = 1
+        self.memory = 1024
+
         logger.info("Machine initialization...")
 
     def say_hello(self):

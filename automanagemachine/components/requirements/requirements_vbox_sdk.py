@@ -3,18 +3,27 @@
 import os
 import re
 import shutil
-import urllib
-import zipfile
+import urllib.request
+import urllib.response
 
 from automanagemachine.components import utils
-from automanagemachine.components.requirements.requirements import Requirements
 from automanagemachine.core import logger, cfg
+from automanagemachine.components.requirements.requirements import Requirements
 
 
 class RequirementsVboxSdk(Requirements):
     """
     Requirements for Vbox API
     """
+
+    def __init__(self):
+        Requirements.__init__(self)
+        self.sdk_version = cfg['sdk']['vbox_sdk']
+        self.sdk_url_latest_stable_version = cfg['sdk']['vbox_url_latest_stable_version']
+        self.sdk_latest_stable_version = None
+        self.tmp_directory = os.getcwd() + "/tmp"
+        self.sdk_directory = os.getcwd() + "/vboxapi"
+        self.verify()
 
     def verify(self):
         """
@@ -29,14 +38,13 @@ class RequirementsVboxSdk(Requirements):
         """
         logger.info("Starting the vbox pre-requisite check...")
 
-        __sdk_version = cfg['sdk']['vbox_sdk']
-
-        if __sdk_version == "latest":
-            __latest_sdk_version = self.__vbox_sdk_get_latest_stable_version()
-            logger.info("Starting the vbox configuration using the latest version of the SDK: " + __latest_sdk_version)
-            self.__vbox_sdk_exist(__latest_sdk_version)
+        if self.sdk_version == "latest":
+            self.sdk_latest_stable_version = self.__vbox_sdk_get_latest_stable_version()
+            logger.info("Starting the vbox configuration using the latest version of the SDK: " +
+                        self.sdk_latest_stable_version)
+            self.__vbox_sdk_exist(self.sdk_latest_stable_version)
         else:
-            __regex_test = self.__vbox_sdk_version_test_regex(__sdk_version)
+            __regex_test = self.__vbox_sdk_version_test_regex(self.sdk_version)
             if __regex_test is None:
                 logger.critical(
                     'Please check the value of "vbox_sdk" in the configuration file, it must contain 3 numbers '
@@ -44,7 +52,7 @@ class RequirementsVboxSdk(Requirements):
                 utils.stop_program()
             elif __regex_test is not None:
                 logger.debug("Validated SDK version: " + __regex_test.group())
-                self.__vbox_sdk_exist(__sdk_version)
+                self.__vbox_sdk_exist(self.sdk_version)
 
     def __vbox_sdk_version_test_regex(self, str):
         """
@@ -58,36 +66,34 @@ class RequirementsVboxSdk(Requirements):
         """
         Check if the API already exists
         """
-        __sdk_dir_exist = os.path.isdir(os.getcwd() + "/vboxapi")
+        __sdk_dir_exist = os.path.isdir(self.sdk_directory)
 
         if __sdk_dir_exist is False:
             logger.info('The API does not exist, launching the download and installation process...')
-            file = self.__vbox_sdk_download(version)
-            utils.unzip_file(file=file, to="./tmp/")
+            __file = self.__vbox_sdk_download(version)
+            utils.unzip_file(file=__file, to="./tmp/")
             self.__vbox_sdk_install()
         else:
             logger.info('The API already exists, let\'s continue')
-
 
     def __vbox_sdk_get_latest_stable_version(self):
         """
         Get latest stable version of vbox sdk
         :return: Last stable release
         """
-        __url_latest_stable_version = cfg['sdk']['vbox_url_latest_stable_version']
-        __latest_stable_version = urllib.request.Request(__url_latest_stable_version)
-        with urllib.request.urlopen(__latest_stable_version) as response:
-            __latest_stable_version = response.read().decode().rstrip()
+        __latest_stable_version_request = urllib.request.Request(self.sdk_url_latest_stable_version)
+        with urllib.request.urlopen(__latest_stable_version_request) as response:
+            __latest_stable_version_response = response.read().decode().rstrip()
 
-        __regex_test = self.__vbox_sdk_version_test_regex(__latest_stable_version)
+        __regex_test = self.__vbox_sdk_version_test_regex(__latest_stable_version_response)
 
         if __regex_test is None:
             logger.critical(
                 'The value of the version does not match the regex, it must contain 3 numbers separated by points. '
-                'Check with the following URL: ' + __url_latest_stable_version)
+                'Check with the following URL: ' + self.sdk_url_latest_stable_version)
             utils.stop_program()
 
-        return __latest_stable_version
+        return __latest_stable_version_response
 
     def __vbox_sdk_download(self, version):
         """
@@ -97,7 +103,6 @@ class RequirementsVboxSdk(Requirements):
         """
         logger.info("Starting the download process...")
 
-        __tmp_directory = os.getcwd() + "/tmp"
         __vbox_sdk_url_repo = cfg['sdk']['vbox_url_repo'] + version + "/"
         __vbox_sdk_url_repo_index_html = __vbox_sdk_url_repo + "index.html"
 
@@ -108,7 +113,7 @@ class RequirementsVboxSdk(Requirements):
             logger.critical(__text_error)
             utils.stop_program()
         except urllib.error.HTTPError as e:
-            __text_error = "Can not access the following URL: " + __vbox_sdk_url_repo_index_html + " (HTTPError code: "\
+            __text_error = "Can not access the following URL: " + __vbox_sdk_url_repo_index_html + " (HTTPError code: " \
                            + str(e.code) + ")"
             logger.critical(__text_error)
             utils.stop_program()
@@ -123,18 +128,18 @@ class RequirementsVboxSdk(Requirements):
         __vbox_sdk_url_download = __vbox_sdk_url_download_search.group().decode()
         __url_download = __vbox_sdk_url_repo + __vbox_sdk_url_download
 
-        logger.debug("Check if the directory (" + __tmp_directory + ") already exists")
+        logger.debug("Check if the directory (" + self.tmp_directory + ") already exists")
 
-        if os.path.isdir(__tmp_directory) is False:
-            os.mkdir(__tmp_directory)
-            logger.debug("Directory '" + __tmp_directory + "' created")
+        if os.path.isdir(self.tmp_directory) is False:
+            os.mkdir(self.tmp_directory)
+            logger.debug("Directory '" + self.tmp_directory + "' created")
         else:
-            logger.debug("Directory '" + __tmp_directory + "' already exists")
+            logger.debug("Directory '" + self.tmp_directory + "' already exists")
 
         logger.info("Downloading the " + __url_download + " file in progress...")
 
         try:
-            file = urllib.request.urlretrieve(__url_download, __tmp_directory + "/" + __vbox_sdk_url_download)
+            __file = urllib.request.urlretrieve(__url_download, self.tmp_directory + "/" + __vbox_sdk_url_download)
         except urllib.error.URLError as e:
             __text_error = "Can not access the following URL: " + __url_download
             logger.critical(__text_error)
@@ -150,7 +155,7 @@ class RequirementsVboxSdk(Requirements):
 
         logger.info("The file has been downloaded")
 
-        return file[0]
+        return __file[0]
 
     def __vbox_sdk_install(self):
         """
@@ -159,12 +164,13 @@ class RequirementsVboxSdk(Requirements):
         """
         __path_script = os.getcwd() + "/tmp/sdk/installer/"
         __path_script_final = __path_script + "vboxapisetup.py install"
+
         utils.run_python_script(__path_script_final, path_to_run=__path_script)
 
         __source_directory = __path_script + "build/lib/vboxapi"
-        __dest_directory = os.getcwd() + '/vboxapi/'
+        __vboxapi_directory = self.sdk_directory
+        __dest_directory = __vboxapi_directory + "/"
 
-        __vboxapi_directory = os.getcwd() + "/vboxapi"
 
         logger.info("Check if the " + __vboxapi_directory + " folder exists...")
 
@@ -180,10 +186,9 @@ class RequirementsVboxSdk(Requirements):
         except shutil.Error:
             logger.warning("Can not move the folder: " + __source_directory + " to " + __dest_directory)
 
-        __tmp_folder = os.getcwd() + "/tmp"
         try:
-            shutil.rmtree(__tmp_folder)
+            shutil.rmtree(self.tmp_directory)
         except shutil.Error:
-            logger.warning("Can remove the folder: " + __tmp_folder)
+            logger.warning("Can remove the folder: " + self.tmp_directory)
 
         logger.info("The VBOX API has been successfully installed: " + __dest_directory)
