@@ -18,11 +18,18 @@ class RequirementsVboxSdk(Requirements):
 
     def __init__(self):
         Requirements.__init__(self)
+        logger.info("Starting the vbox pre-requisite check...")
         self.sdk_version = cfg['sdk']['vbox_sdk']
         self.sdk_url_latest_stable_version = cfg['sdk']['vbox_url_latest_stable_version']
         self.sdk_latest_stable_version = None
         self.tmp_directory = os.getcwd() + "/tmp"
         self.sdk_directory = os.getcwd() + "/vboxapi"
+        self.run()
+
+    def run(self):
+        """
+        Run process requirements for VBOX
+        """
         self.verify()
 
     def verify(self):
@@ -36,8 +43,6 @@ class RequirementsVboxSdk(Requirements):
         """
         Prerequisites vbox sdk
         """
-        logger.info("Starting the vbox pre-requisite check...")
-
         if self.sdk_version == "latest":
             self.sdk_latest_stable_version = self.__vbox_sdk_get_latest_stable_version()
             logger.info("Starting the vbox configuration using the latest version of the SDK: " +

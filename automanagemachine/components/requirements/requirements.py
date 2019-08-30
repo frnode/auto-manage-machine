@@ -16,9 +16,7 @@ class Requirements:
         logger.info('Starting the common pre-requisite check...')
         self.python_version = utils.python_version()
         self.python_minimal_version = "3.0.0"
-        self.virtual_environment_txt = cfg['machine']['virtual_environment']
-        self.virtual_environment = None
-        self.machine = None
+        self.virtual_environment = cfg['machine']['virtual_environment']
 
     def verify(self):
         """

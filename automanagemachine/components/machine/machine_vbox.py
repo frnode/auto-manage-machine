@@ -21,6 +21,7 @@ class MachineVbox(Machine):
 
     def __init__(self):
         Machine.__init__(self)
+        logger.info("MachineVbox initialization...")
         self.vbox = virtualbox.VirtualBox()
         self.api = "vbox"
 
@@ -69,6 +70,7 @@ class MachineVbox(Machine):
         var = None
 
     def create(self):
+        Machine.create(self)
         self.create_with_ova()
 
     def create_old(self, name, machine_group, machine_os):

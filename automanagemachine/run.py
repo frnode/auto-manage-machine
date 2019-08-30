@@ -8,18 +8,18 @@ from automanagemachine.core import cfg, logger
 
 print(cfg['app']['name'] + " | version: " + cfg['app']['version'])
 
-requirements = Requirements()
-requirements.run()
-
-if requirements.virtual_environment_txt == "vbox":
-    requirements.virtual_environment = RequirementsVboxSdk()
-    requirements.machine = MachineVbox()
-elif requirements.virtual_environment_txt == "aws":
+virtual_environment = cfg['machine']['virtual_environment']
+if virtual_environment == "vbox":
+    requirements = RequirementsVboxSdk()
+    machine = MachineVbox()
+elif virtual_environment == "aws":
     logger.warning("AWS not implemented.")
     utils.stop_program()
 else:
     logger.critical("Not implemented.")
     utils.stop_program()
+
+machine.create()
 
 # TODO: Implement others environments
 # if determine_environment == "vbox":
