@@ -24,6 +24,9 @@ class MachineVbox(Machine):
         logger.info("MachineVbox initialization...")
         self.vbox = virtualbox.VirtualBox()
         self.api = "vbox"
+        self.ova = cfg['machine']['ova']
+        self.ova_appliance_name = cfg['machine']['ova_appliance_name']
+        self.machine_group = cfg['app']['name']
 
     def start(self, uuid):
         """
@@ -45,16 +48,6 @@ class MachineVbox(Machine):
         __session.unlock_machine()
         return __vm
 
-    def test(self):
-        __ova_file = os.getcwd() + "/data/ova/" + cfg['machine']['ova']
-        __test = self.vbox.create_appliance()
-        __test.read(__ova_file)
-        __test.interpret()
-        __desc = __test.find_description("Debian_10_64")
-        __desc.set_name("test")
-        __desc.set_
-        __test.import_machines()
-
 
     def run_install(self, machine):
         __iso_file = os.getcwd() + "/data/isos/" + cfg['machine']['iso']
@@ -67,7 +60,30 @@ class MachineVbox(Machine):
         __installer.reconfigure_vm()
 
     def create_with_ova(self):
-        var = None
+        """
+        Create VM with .OVA file
+        """
+        __ova_file = os.getcwd() + "/data/ova/" + self.ova
+        __appliance = self.vbox.create_appliance()
+        __appliance.read(__ova_file)
+        __appliance.interpret()
+        __desc = __appliance.find_description(self.ova_appliance_name)
+
+        logger.info(
+            "Machine settings: Name: '" + self.name + "' - Group: '" + self.machine_group + "' - OS: '" + self.os + "'")
+
+        __machine_exist = self.__exist(self.name)
+
+        if __machine_exist is True:
+            logger.warning("The name of the machine already exists: " + self.name)
+            self.name = self.__generate_name(self.name)
+            logger.info("Generating a new name: " + self.name)
+
+        __desc.set_name(self.name)
+        __desc.set_cpu(self.cpu)
+        __desc.set_memory(self.virtual_memory)
+        __appliance.import_machines()
+
 
     def create(self):
         Machine.create(self)

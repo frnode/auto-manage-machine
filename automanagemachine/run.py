@@ -19,6 +19,9 @@ else:
     logger.critical("Not implemented.")
     utils.stop_program()
 
+machine.name = cfg['machine']['name']
+machine.cpu = cfg['machine']['cpu']
+machine.virtual_memory = cfg['machine']['virtual_memory']
 machine.create()
 
 # TODO: Implement others environments

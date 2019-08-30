@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-from automanagemachine.core import logger
+from automanagemachine.core import logger, cfg
 
 
 class Machine:
@@ -12,7 +12,9 @@ class Machine:
         logger.info("Machine initialization...")
         self.api = None
         self.cpu = 1
-        self.memory = 1024
+        self.virtual_memory = 1024
+        self.name = "default-name"
+        self.os = cfg['machine']['os']
 
 
     def say_hello(self):
