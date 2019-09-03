@@ -176,7 +176,6 @@ class RequirementsVboxSdk(Requirements):
         __vboxapi_directory = self.sdk_directory
         __dest_directory = __vboxapi_directory + "/"
 
-
         logger.info("Check if the " + __vboxapi_directory + " folder exists...")
 
         if os.path.isdir(__vboxapi_directory) is True:

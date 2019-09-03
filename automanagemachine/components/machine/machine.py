@@ -16,7 +16,6 @@ class Machine:
         self.name = "default-name"
         self.os = cfg['machine']['os']
 
-
     def say_hello(self):
         """
         Just say hello...

@@ -23,6 +23,7 @@ machine.name = cfg['machine']['name']
 machine.cpu = cfg['machine']['cpu']
 machine.virtual_memory = cfg['machine']['virtual_memory']
 machine.create()
+machine.run()
 
 # TODO: Implement others environments
 # if determine_environment == "vbox":

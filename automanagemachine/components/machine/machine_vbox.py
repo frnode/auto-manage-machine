@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
+import datetime
 import os
 import time
 
@@ -27,19 +28,28 @@ class MachineVbox(Machine):
         self.ova = cfg['machine']['ova']
         self.ova_appliance_name = cfg['machine']['ova_appliance_name']
         self.machine_group = cfg['app']['name']
+        self.cpu_execution_cap = int(cfg['machine']['cpu_execution_cap'])
+        self.memory_balloon_size = int(cfg['machine']['memory_balloon_size'])
 
     def create_with_ova(self):
         """
         Create VM with .OVA file
         """
         __ova_file = os.getcwd() + "/data/ova/" + self.ova
-        __appliance = self.vbox.create_appliance()
-        __appliance.read(__ova_file)
-        __appliance.interpret()
-        __desc = __appliance.find_description(self.ova_appliance_name)
 
         logger.info(
             "Machine settings: Name: '" + self.name + "' - Group: '" + self.machine_group + "' - OS: '" + self.os + "'")
+
+        __appliance = self.vbox.create_appliance()
+        __progress = __appliance.read(__ova_file)
+        logger.info("Reading the .ova file...")
+        __progress.wait_for_completion(-1)
+        __appliance.interpret()
+
+        if __appliance.get_warnings() is not None:
+            logger.warning(__appliance.get_warnings())
+
+        __desc = __appliance.find_description(self.ova_appliance_name)
 
         __machine_exist = self.__exist(self.name)
 
@@ -48,15 +58,49 @@ class MachineVbox(Machine):
             self.name = self.__generate_name(self.name)
             logger.info("Generating a new name: " + self.name)
 
+        logger.info("Applying settings...")
         __desc.set_name(self.name)
         __desc.set_cpu(self.cpu)
         __desc.set_memory(self.virtual_memory)
-        __appliance.import_machines()
 
+        __progress = __appliance.import_machines()
+        logger.info("Creation in progress, wait...")
+        __progress.wait_for_completion(-1)
+        logger.info("Machine created: " + self.name)
+
+    def modify(self):
+        """
+        Edit the created machine
+        """
+        __vm = self.vbox.find_machine(self.name)
+        __session = __vm.create_session()
+
+        __session.machine.cpu_execution_cap = int(self.cpu_execution_cap)
+        __session.machine.memory_balloon_size = int(self.memory_balloon_size)
+        __session.machine.description = "Created with " + cfg['app']['name'] + " on the " + datetime.datetime.now().\
+            strftime('%Y-%m-%d at %H:%M:%S.%f') + "\nBased on the appliance: " + self.ova_appliance_name
+
+        __session.machine.save_settings()
+        __session.unlock_machine()
 
     def create(self):
+        """
+        Create machine
+        """
         Machine.create(self)
         self.create_with_ova()
+        self.modify()
+
+    def run(self):
+        """
+        Launch machine machine
+        """
+        logger.info("Starting the machine: " + self.name)
+        __session = virtualbox.Session()
+        __vm = self.vbox.find_machine(self.name)
+        __progress = __vm.launch_vm_process(__session, 'gui', '')
+        __progress.wait_for_completion()
+        logger.info("Machine started")
 
     def __exist(self, name):
         """
