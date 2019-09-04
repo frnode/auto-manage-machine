@@ -183,11 +183,16 @@ class MachineVbox(Machine):
 
         return __generated_name
 
-    def __find_vm_by_uuid_or_name(self, uuid):
+    def __find_vm_by_uuid_or_name(self, uuid_or_uuid):
+        """
+        Look for a machine and return it
+        :param uuid_or_uuid: Name of the machine or UUID
+        :return: If the machine exists, return the machine
+        """
         try:
-            __vm = self.vbox.find_machine(uuid)
+            __vm = self.vbox.find_machine(uuid_or_uuid)
         except VBoxErrorObjectNotFound:
-            logger.warning("Can not find the machine with the name/uuid: " + uuid)
+            logger.warning("Can not find the machine with the name/uuid: " + uuid_or_uuid)
             utils.stop_program()
 
         return __vm
