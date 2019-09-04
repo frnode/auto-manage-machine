@@ -31,7 +31,7 @@ class MachineVbox(Machine):
         self.cpu_execution_cap = int(cfg['machine']['cpu_execution_cap'])
         self.memory_balloon_size = int(cfg['machine']['memory_balloon_size'])
 
-    def create_with_ova(self):
+    def __create_with_ova(self):
         """
         Create VM with .OVA file
         """
@@ -68,7 +68,7 @@ class MachineVbox(Machine):
         __progress.wait_for_completion(-1)
         logger.info("Machine created: " + self.name)
 
-    def modify(self):
+    def __modify(self):
         """
         Edit the created machine
         """
@@ -88,8 +88,8 @@ class MachineVbox(Machine):
         Create machine
         """
         Machine.create(self)
-        self.create_with_ova()
-        self.modify()
+        self.__create_with_ova()
+        self.__modify()
 
     def run(self):
         """
