@@ -15,6 +15,7 @@ class Machine:
         self.virtual_memory = 1024
         self.name = "default-name"
         self.os = cfg['machine']['os']
+        self.run_command = cfg['machine']['run_command']
 
     def say_hello(self):
         """
@@ -33,3 +34,9 @@ class Machine:
         Create a new machine, basic behavior
         """
         logger.info("Create new " + str.upper(self.api) + " machine...")
+
+    def run_command(self):
+        """
+        Run command, basic behavior
+        """
+        print('Run command...')

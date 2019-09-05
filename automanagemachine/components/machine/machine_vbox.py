@@ -40,13 +40,14 @@ class MachineVbox(Machine):
             "Machine settings: Name: '" + self.name + "' - Group: '" + self.machine_group + "' - OS: '" + self.os + "'")
 
         __appliance = self.vbox.create_appliance()
+
         try:
             __progress = __appliance.read(__ova_file)
         except VBoxError:
             logger.warning("Can not read .OVA file: " + __ova_file)
             utils.stop_program()
 
-        logger.info("Reading the .ova file...")
+        logger.info("Reading the .ova file (" + __ova_file + ") ...")
 
         try:
             __progress.wait_for_completion(-1)
@@ -162,7 +163,15 @@ class MachineVbox(Machine):
             logger.warning("Can not start the machine")
             utils.stop_program()
 
+        self.run_command(__session)
+        __session.unlock_machine()
+
         logger.info("Machine started")
+
+    def run_command(self, session):
+        Machine.run_command(self)
+        session.console.keyboard.put_keys(list(cfg['machine']['run_command']))
+        logger.warning("Keyboard sended")
 
     def __exist(self, name):
         """
@@ -189,16 +198,16 @@ class MachineVbox(Machine):
 
         return __generated_name
 
-    def __find_vm_by_uuid_or_name(self, uuid_or_uuid):
+    def __find_vm_by_uuid_or_name(self, uuid_or_name):
         """
         Look for a machine and return it
         :param uuid_or_uuid: Name of the machine or UUID
         :return: If the machine exists, return the machine
         """
         try:
-            __vm = self.vbox.find_machine(uuid_or_uuid)
+            __vm = self.vbox.find_machine(uuid_or_name)
         except VBoxErrorObjectNotFound:
-            logger.warning("Can not find the machine with the name/uuid: " + uuid_or_uuid)
+            logger.warning("Can not find the machine with the name/uuid: " + uuid_or_name)
             utils.stop_program()
 
         return __vm
