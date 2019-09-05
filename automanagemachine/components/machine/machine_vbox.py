@@ -6,6 +6,7 @@ import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
     VBoxErrorInvalidObjectState, VBoxErrorVmError, VBoxErrorMaximumReached, VBoxErrorFileError, VBoxErrorXmlError, \
     OleErrorAccessdenied
+from virtualbox.library_base import VBoxError
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
@@ -39,7 +40,12 @@ class MachineVbox(Machine):
             "Machine settings: Name: '" + self.name + "' - Group: '" + self.machine_group + "' - OS: '" + self.os + "'")
 
         __appliance = self.vbox.create_appliance()
-        __progress = __appliance.read(__ova_file)
+        try:
+            __progress = __appliance.read(__ova_file)
+        except VBoxError:
+            logger.warning("Can not read .OVA file: " + __ova_file)
+            utils.stop_program()
+
         logger.info("Reading the .ova file...")
 
         try:

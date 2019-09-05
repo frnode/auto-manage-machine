@@ -2,7 +2,6 @@
 # coding: utf-8
 import platform
 
-from automanagemachine.components.machine.machine_vbox import MachineVbox
 from automanagemachine.core import cfg, logger
 import automanagemachine.components.utils as utils
 
