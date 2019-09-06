@@ -39,4 +39,4 @@ class Machine:
         """
         Run command, basic behavior
         """
-        print('Run command...')
+        logger.info('Run command...')

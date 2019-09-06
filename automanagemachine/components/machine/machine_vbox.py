@@ -2,6 +2,8 @@
 # coding: utf-8
 import datetime
 import os
+import time
+
 import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
     VBoxErrorInvalidObjectState, VBoxErrorVmError, VBoxErrorMaximumReached, VBoxErrorFileError, VBoxErrorXmlError, \
@@ -41,25 +43,20 @@ class MachineVbox(Machine):
 
         __appliance = self.vbox.create_appliance()
 
+        __appliance.read(__ova_file)
         try:
-            __progress = __appliance.read(__ova_file)
+            __appliance.read(__ova_file)
         except VBoxError:
             logger.warning("Can not read .OVA file: " + __ova_file)
             utils.stop_program()
 
         logger.info("Reading the .ova file (" + __ova_file + ") ...")
 
-        try:
-            __progress.wait_for_completion(-1)
-        except VBoxErrorIprtError:
-            logger.warning("Can not read .OVA file: " + __ova_file)
-            utils.stop_program()
-
         __appliance.interpret()
 
-        if __appliance.get_warnings() is not None:
-            logger.warning(__appliance.get_warnings())
-            utils.stop_program()
+        #if __appliance.get_warnings() is not None:
+        #    logger.warning(__appliance.get_warnings())
+        #    utils.stop_program()
 
         __desc = __appliance.find_description(self.ova_appliance_name)
 
@@ -163,15 +160,19 @@ class MachineVbox(Machine):
             logger.warning("Can not start the machine")
             utils.stop_program()
 
-        self.run_command(__session)
+        self.__run_command(__session)
         __session.unlock_machine()
 
         logger.info("Machine started")
 
-    def run_command(self, session):
+    def __run_command(self, __session):
         Machine.run_command(self)
-        session.console.keyboard.put_keys(list(cfg['machine']['run_command']))
-        logger.warning("Keyboard sended")
+        time.sleep(int(cfg['machine']['command_wait_time']))
+        guest_session = __session.console.guest.create_session(cfg['machine']['username'],
+                                                               cfg['machine']['password'])
+
+        proc, stdout, stderr = guest_session.execute(cfg['machine']['command'], ["/home"])
+        print(stdout)
 
     def __exist(self, name):
         """

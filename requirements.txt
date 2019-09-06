@@ -1,2 +1,2 @@
-pyvbox
+virtualbox
 pywin32
