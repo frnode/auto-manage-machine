@@ -23,22 +23,3 @@ machine.cpu = cfg['machine']['cpu']
 machine.virtual_memory = cfg['machine']['virtual_memory']
 machine.create()
 machine.run()
-
-# TODO: Implement others environments
-# if determine_environment == "vbox":
-#     requirements = RequirementsVboxSdk()
-#     machine = MachineVbox()
-# elif determine_environment == "aws":
-#     logger.warning("AWS not implemented.")
-#     utils.stop_program()
-# else:
-#     logger.critical("Not implemented.")
-#     utils.stop_program()
-
-#requirements.verify()
-## vm = machine.create(cfg['machine']['name'], "/" + cfg['app']['name'], cfg['machine']['environment'])
-#machine.test()
-## machine.test()
-## vm = machine.create_using_ova(cfg['machine']['name'])
-##machine.start(cfg['machine']['name'])
-#
