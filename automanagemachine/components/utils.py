@@ -52,6 +52,11 @@ def run_python_script(command, path_to_run=os.getcwd(), output=False):
 
 
 def unzip_file(file, to):
+    """
+    Unzip file
+    :param file: Zip file (to extract)
+    :param to: Location of extraction
+    """
     if zipfile.is_zipfile(file) is False:
         __text_error = "Invalid ZIP file: " + file
         logger.critical(__text_error)
