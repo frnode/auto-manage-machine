@@ -2,7 +2,6 @@
 # coding: utf-8
 import datetime
 import os
-import time
 
 import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
@@ -43,7 +42,6 @@ class MachineVbox(Machine):
 
         __appliance = self.vbox.create_appliance()
 
-        __appliance.read(__ova_file)
         try:
             __appliance.read(__ova_file)
         except VBoxError:
@@ -167,12 +165,10 @@ class MachineVbox(Machine):
 
     def __run_command(self, __session):
         Machine.run_command(self)
-        time.sleep(int(cfg['machine']['command_wait_time']))
-        guest_session = __session.console.guest.create_session(cfg['machine']['username'],
-                                                               cfg['machine']['password'])
+        guest_session = __session.console.guest.create_session(self.username, self.password)
 
-        proc, stdout, stderr = guest_session.execute(cfg['machine']['command'], ["/home"])
-        print(stdout)
+        proc, stdout, stderr = guest_session.execute(self.command, self.command_args)
+        #print(stdout)
 
     def __exist(self, name):
         """

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf-8
+import time
+
 from automanagemachine.core import logger, cfg
 
 
@@ -15,7 +17,11 @@ class Machine:
         self.virtual_memory = 1024
         self.name = "default-name"
         self.os = cfg['machine']['os']
-        self.run_command = cfg['machine']['run_command']
+        self.command = cfg['machine']['command']
+        self.command_args = cfg['machine']['command_args'].split("\n")
+        self.command_wait_time = int(cfg['machine']['command_wait_time'])
+        self.username = cfg['machine']['username']
+        self.password = cfg['machine']['password']
 
     def say_hello(self):
         """
@@ -39,4 +45,6 @@ class Machine:
         """
         Run command, basic behavior
         """
+        logger.info('Wait ' + self.command_wait_time + ' seconds before starting the command ...')
+        time.sleep(self.command_wait_time)
         logger.info('Run command...')
