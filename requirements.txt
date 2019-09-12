@@ -1,3 +1,0 @@
-coloredlogs
-virtualbox
-pywin32
