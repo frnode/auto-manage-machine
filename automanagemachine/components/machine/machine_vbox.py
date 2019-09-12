@@ -164,6 +164,10 @@ class MachineVbox(Machine):
         logger.info("Machine started")
 
     def __run_command(self, __session):
+        """
+        Execute a command on the defined session
+        :param __session: Session where to send the execution command
+        """
         Machine.run_command(self)
         guest_session = __session.console.guest.create_session(self.username, self.password)
 
