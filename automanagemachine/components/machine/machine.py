@@ -7,7 +7,7 @@ from automanagemachine.core import logger, cfg
 
 class Machine:
     """
-    TODO
+    Class to create a basic machine object, initialized by the inheritance class
     """
 
     def __init__(self):
@@ -22,12 +22,6 @@ class Machine:
         self.command_wait_time = int(cfg['machine']['command_wait_time'])
         self.username = cfg['machine']['username']
         self.password = cfg['machine']['password']
-
-    def say_hello(self):
-        """
-        Just say hello...
-        """
-        print('Hello ? Are you here ?')
 
     def start(self):
         """

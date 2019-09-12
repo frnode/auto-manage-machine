@@ -19,8 +19,8 @@ class RequirementsVboxSdk(Requirements):
     def __init__(self):
         Requirements.__init__(self)
         logger.info("Starting the vbox pre-requisite check...")
-        self.sdk_version = cfg['sdk']['vbox_sdk']
-        self.sdk_url_latest_stable_version = cfg['sdk']['vbox_url_latest_stable_version']
+        self.sdk_version = cfg['sdk_virtualbox']['vbox_sdk']
+        self.sdk_url_latest_stable_version = cfg['sdk_virtualbox']['vbox_url_latest_stable_version']
         self.sdk_latest_stable_version = None
         self.tmp_directory = os.getcwd() + "/tmp"
         self.sdk_directory = os.getcwd() + "/vboxapi"
@@ -108,7 +108,7 @@ class RequirementsVboxSdk(Requirements):
         """
         logger.info("Starting the download process...")
 
-        __vbox_sdk_url_repo = cfg['sdk']['vbox_url_repo'] + version + "/"
+        __vbox_sdk_url_repo = cfg['sdk_virtualbox']['vbox_url_repo'] + version + "/"
         __vbox_sdk_url_repo_index_html = __vbox_sdk_url_repo + "index.html"
 
         try:
@@ -165,7 +165,6 @@ class RequirementsVboxSdk(Requirements):
     def __vbox_sdk_install(self):
         """
         Installing the VBOX API
-        :rtype: object
         """
         __path_script = os.getcwd() + "/tmp/sdk/installer/"
         __path_script_final = __path_script + "vboxapisetup.py install"
