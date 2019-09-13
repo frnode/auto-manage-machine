@@ -39,6 +39,6 @@ class Machine:
         """
         Run command, basic behavior
         """
-        logger.info('Wait ' + self.command_wait_time + ' seconds before starting the command ...')
+        logger.info('Wait ' + str(self.command_wait_time) + ' seconds before starting the command ...')
         time.sleep(self.command_wait_time)
         logger.info('Run command...')
