@@ -24,7 +24,7 @@ _(The program probably works in other environments, it's up to you to try!)._
     - Download Virtualbox in the desired version at this address: 
      https://download.virtualbox.org/virtualbox/ 
     - Or latest version: https://www.virtualbox.org/wiki/Downloads
-    - `.OVA` template file in the folder `/data/ova`
-    - Set the parameters specific to Virtualbox in the file `config.ini` _(Below "; Only for Virtualbox" and [sdk_virtualbox])_
+    - `.OVA` template file in the folder `/data/ova` **(Virtualbox additions must be installed on the operating system.)**
+    - Set the parameters specific to Virtualbox in the file `config/config_vbox.ini`
 
 

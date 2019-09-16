@@ -6,7 +6,10 @@ import logging
 import coloredlogs
 
 cfg = configparser.ConfigParser()  # initialize configparser with the cfg variable
-cfg.read('config.ini')
+cfg.read('config/config.ini')
+
+cfg_vbox = configparser.ConfigParser()  # initialize configparser with the cfg_vbox variable
+cfg_vbox.read('config/config_vbox.ini')
 
 # create logger
 logger = logging.getLogger(cfg['app']['name'])

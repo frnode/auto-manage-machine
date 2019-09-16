@@ -7,7 +7,7 @@ import urllib.request
 import urllib.response
 
 from automanagemachine.components import utils
-from automanagemachine.core import logger, cfg
+from automanagemachine.core import logger, cfg, cfg_vbox
 from automanagemachine.components.requirements.requirements import Requirements
 
 
@@ -19,8 +19,8 @@ class RequirementsVboxSdk(Requirements):
     def __init__(self):
         Requirements.__init__(self)
         logger.info("Starting the vbox pre-requisite check...")
-        self.sdk_version = cfg['sdk_virtualbox']['vbox_sdk']
-        self.sdk_url_latest_stable_version = cfg['sdk_virtualbox']['vbox_url_latest_stable_version']
+        self.sdk_version = cfg_vbox['sdk_virtualbox']['vbox_sdk']
+        self.sdk_url_latest_stable_version = cfg_vbox['sdk_virtualbox']['vbox_url_latest_stable_version']
         self.sdk_latest_stable_version = None
         self.tmp_directory = os.getcwd() + "/tmp"
         self.sdk_directory = os.getcwd() + "/vboxapi"

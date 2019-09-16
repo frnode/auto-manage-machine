@@ -6,12 +6,12 @@ import os
 import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
     VBoxErrorInvalidObjectState, VBoxErrorVmError, VBoxErrorMaximumReached, VBoxErrorFileError, VBoxErrorXmlError, \
-    OleErrorAccessdenied
+    OleErrorAccessdenied, NetworkAttachmentType
 from virtualbox.library_base import VBoxError
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
-from automanagemachine.core import cfg, logger
+from automanagemachine.core import cfg, logger, cfg_vbox
 
 
 class MachineVbox(Machine):
@@ -24,11 +24,11 @@ class MachineVbox(Machine):
         logger.info("MachineVbox initialization...")
         self.vbox = virtualbox.VirtualBox()
         self.api = "vbox"
-        self.ova = cfg['machine']['ova']
-        self.ova_appliance_name = cfg['machine']['ova_appliance_name']
+        self.ova = cfg_vbox['machine']['ova']
+        self.ova_appliance_name = cfg_vbox['machine']['ova_appliance_name']
         self.machine_group = cfg['app']['name']
-        self.cpu_execution_cap = int(cfg['machine']['cpu_execution_cap'])
-        self.memory_balloon_size = int(cfg['machine']['memory_balloon_size'])
+        self.cpu_execution_cap = int(cfg_vbox['machine']['cpu_execution_cap'])
+        self.memory_balloon_size = int(cfg_vbox['machine']['memory_balloon_size'])
 
     def __create_with_ova(self):
         """
@@ -101,6 +101,9 @@ class MachineVbox(Machine):
         __session.machine.description = "Created with " + cfg['app']['name'] + " on the " + datetime.datetime.now(). \
             strftime('%Y-%m-%d at %H:%M:%S.%f') + "\nBased on the appliance: " + self.ova_appliance_name
 
+        adapter = __session.machine.get_network_adapter(0)
+        adapter.attachment_type = NetworkAttachmentType(1)
+
         try:
             __session.machine.save_settings()
         except VBoxErrorFileError:
@@ -161,6 +164,9 @@ class MachineVbox(Machine):
         self.__run_command(__session)
         __session.unlock_machine()
 
+        res = __vm.enumerate_guest_properties('/VirtualBox/GuestInfo/Net/0/V4/IP')
+        ip = res[1][0]
+        print(ip)
         logger.info("Machine started")
 
     def __run_command(self, __session):

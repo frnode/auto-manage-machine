@@ -83,6 +83,7 @@ def generate_random_str(length=6):
     """
     return uuid.uuid4().hex[:length].upper()
 
+
 def stop_program():
     """
     Quit program
