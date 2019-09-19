@@ -52,7 +52,7 @@ class MachineVbox(Machine):
 
         __appliance.interpret()
 
-        #if __appliance.get_warnings() is not None:
+        # if __appliance.get_warnings() is not None:
         #    logger.warning(__appliance.get_warnings())
         #    utils.stop_program()
 
@@ -164,9 +164,10 @@ class MachineVbox(Machine):
         self.__run_command(__session)
         __session.unlock_machine()
 
-        res = __vm.enumerate_guest_properties('/VirtualBox/GuestInfo/Net/0/V4/IP')
-        ip = res[1][0]
-        print(ip)
+        # res = __vm.enumerate_guest_properties('/VirtualBox/GuestInfo/Net/0/V4/IP')
+        # ip = res[1][0]
+        # print(ip)
+
         logger.info("Machine started")
 
     def __run_command(self, __session):
@@ -178,7 +179,7 @@ class MachineVbox(Machine):
         guest_session = __session.console.guest.create_session(self.username, self.password)
 
         proc, stdout, stderr = guest_session.execute(self.command, self.command_args)
-        #print(stdout)
+        print(stdout)
 
     def __exist(self, name):
         """
@@ -200,7 +201,7 @@ class MachineVbox(Machine):
         __generated_name = original_name + "_" + utils.generate_random_str(10)
         __machine_exist = self.__exist(__generated_name)
 
-        if __machine_exist is True:
+        if __machine_exist:
             return self.__generate_name(original_name)
 
         return __generated_name
