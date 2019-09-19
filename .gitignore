@@ -3,3 +3,5 @@
 /automanagemachine/vboxapi/
 /automanagemachine/auto-manage-machine.log
 .idea/
+__pycache__/
+*.py[cod]
