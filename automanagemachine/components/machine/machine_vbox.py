@@ -6,7 +6,7 @@ import os
 import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
     VBoxErrorInvalidObjectState, VBoxErrorVmError, VBoxErrorMaximumReached, VBoxErrorFileError, VBoxErrorXmlError, \
-    OleErrorAccessdenied, NetworkAttachmentType
+    OleErrorAccessdenied, NetworkAttachmentType, FileCopyFlag
 from virtualbox.library_base import VBoxError
 
 from automanagemachine.components import utils
@@ -29,6 +29,7 @@ class MachineVbox(Machine):
         self.machine_group = cfg['app']['name']
         self.cpu_execution_cap = int(cfg_vbox['machine']['cpu_execution_cap'])
         self.memory_balloon_size = int(cfg_vbox['machine']['memory_balloon_size'])
+        self.script_copy_to_guest = cfg['machine']['script_copy_to_guest']
 
     def __create_with_ova(self):
         """
@@ -60,7 +61,7 @@ class MachineVbox(Machine):
 
         __machine_exist = self.__exist(self.name)
 
-        if __machine_exist is True:
+        if __machine_exist:
             logger.warning("The name of the machine already exists: " + self.name)
             self.name = self.__generate_name(self.name)
             logger.info("Generating a new name: " + self.name)
@@ -161,7 +162,9 @@ class MachineVbox(Machine):
             logger.warning("Can not start the machine")
             utils.stop_program()
 
-        self.__run_command(__session)
+        if self.command:
+            self.__run_command(__session)
+
         __session.unlock_machine()
 
         # res = __vm.enumerate_guest_properties('/VirtualBox/GuestInfo/Net/0/V4/IP')
@@ -176,10 +179,23 @@ class MachineVbox(Machine):
         :param __session: Session where to send the execution command
         """
         Machine.run_command(self)
-        guest_session = __session.console.guest.create_session(self.username, self.password)
+        try:
+            guest_session = __session.console.guest.create_session(self.username, self.password)
+        except VBoxErrorIprtError:
+            logger.warning("Error creating guest session")
+            utils.stop_program()
+        except VBoxErrorMaximumReached:
+            logger.warning("The maximum of concurrent guest sessions has been reached")
+            utils.stop_program()
+
+        if self.script_copy_to_guest:
+            __tmp_file_to_guest = os.getcwd() + "/data/scripts/" + self.script_copy_to_guest
+            __tmp_file_copy = guest_session.file_copy_to_guest(__tmp_file_to_guest, ".", [FileCopyFlag(0)])
 
         proc, stdout, stderr = guest_session.execute(self.command, self.command_args)
-        print(stdout)
+
+        logger.info("Result of the script/command:")
+        logger.info(stdout)
 
     def __exist(self, name):
         """
