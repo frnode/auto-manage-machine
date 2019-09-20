@@ -103,7 +103,8 @@ class MachineVbox(Machine):
             strftime('%Y-%m-%d at %H:%M:%S.%f') + "\nBased on the appliance: " + self.ova_appliance_name
 
         adapter = __session.machine.get_network_adapter(0)
-        adapter.attachment_type = NetworkAttachmentType(1)
+        adapter.attachment_type = NetworkAttachmentType(2)
+        adapter.bridged_interface = "Intel(R) Ethernet Connection (2) I219-V"
 
         try:
             __session.machine.save_settings()
@@ -114,7 +115,7 @@ class MachineVbox(Machine):
             logger.warning("Could not parse the settings file")
             utils.stop_program()
         except OleErrorAccessdenied:
-            logger.warning(" Modification request refused")
+            logger.warning("Modification request refused")
             utils.stop_program()
 
         __session.unlock_machine()
@@ -161,6 +162,8 @@ class MachineVbox(Machine):
         except VBoxErrorIprtError:
             logger.warning("Can not start the machine")
             utils.stop_program()
+
+        logger.info("Machine started")
 
         if self.command:
             self.__run_command(__session)
