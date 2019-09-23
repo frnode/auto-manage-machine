@@ -3,6 +3,7 @@
 import datetime
 import os
 
+import ifaddr
 import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
     VBoxErrorInvalidObjectState, VBoxErrorVmError, VBoxErrorMaximumReached, VBoxErrorFileError, VBoxErrorXmlError, \
@@ -11,6 +12,7 @@ from virtualbox.library_base import VBoxError
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
+from automanagemachine.components.utils import get_network_card
 from automanagemachine.core import cfg, logger, cfg_vbox
 
 
@@ -30,6 +32,8 @@ class MachineVbox(Machine):
         self.cpu_execution_cap = int(cfg_vbox['machine']['cpu_execution_cap'])
         self.memory_balloon_size = int(cfg_vbox['machine']['memory_balloon_size'])
         self.script_copy_to_guest = cfg['machine']['script_copy_to_guest']
+        self.network_attachement_type = int(cfg_vbox['machine']['network_attachement_type'])
+        self.bridged_interface = cfg_vbox['machine']['network_bridged_interface']
 
     def __create_with_ova(self):
         """
@@ -103,8 +107,38 @@ class MachineVbox(Machine):
             strftime('%Y-%m-%d at %H:%M:%S.%f') + "\nBased on the appliance: " + self.ova_appliance_name
 
         adapter = __session.machine.get_network_adapter(0)
-        adapter.attachment_type = NetworkAttachmentType(2)
-        adapter.bridged_interface = "Intel(R) Ethernet Connection (2) I219-V"
+        adapter.attachment_type = NetworkAttachmentType(self.network_attachement_type)
+
+        adapters_host = ifaddr.get_adapters()
+
+        if self.network_attachement_type == 1:
+            # NAT
+            pass
+        elif self.network_attachement_type == 2:
+            # Bridged
+            if self.bridged_interface == "default" or self.bridged_interface == "":
+                # use the first network adapter of the operating system
+                adapter_host = get_network_card(adapters_host.__getitem__(0).nice_name)
+            else:
+                adapter_host = get_network_card(self.bridged_interface)
+
+            if adapter_host is not None:
+                adapter.bridged_interface = adapter_host.nice_name
+            else:
+                logger.warning("The network card for bridge access does not exist")
+                utils.stop_program()
+        elif self.network_attachement_type == 3:
+            # Internal
+            pass
+        elif self.network_attachement_type == 4:
+            # Host Only
+            pass
+        elif self.network_attachement_type == 5:
+            # Generic
+            pass
+        elif self.network_attachement_type == 6:
+            # NAT Network
+            pass
 
         try:
             __session.machine.save_settings()

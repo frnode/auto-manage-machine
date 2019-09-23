@@ -89,3 +89,16 @@ def stop_program():
     Quit program
     """
     sys.exit()
+
+
+def get_network_card(name):
+    """
+    Check that the network card is valid
+    """
+    import ifaddr
+    adapters = ifaddr.get_adapters()
+    for adapter in adapters:
+        if adapter.nice_name == name:
+            return adapter
+
+    return None
