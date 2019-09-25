@@ -2,17 +2,17 @@
 # coding: utf-8
 import datetime
 import os
+import time
 
 import ifaddr
 import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
     VBoxErrorInvalidObjectState, VBoxErrorVmError, VBoxErrorMaximumReached, VBoxErrorFileError, VBoxErrorXmlError, \
-    OleErrorAccessdenied, NetworkAttachmentType, FileCopyFlag
+    OleErrorAccessdenied, NetworkAttachmentType, FileCopyFlag, IHostNetworkInterface
 from virtualbox.library_base import VBoxError
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
-from automanagemachine.components.utils import get_network_card
 from automanagemachine.core import cfg, logger, cfg_vbox
 
 
@@ -33,7 +33,31 @@ class MachineVbox(Machine):
         self.memory_balloon_size = int(cfg_vbox['machine']['memory_balloon_size'])
         self.script_copy_to_guest = cfg['machine']['script_copy_to_guest']
         self.network_attachement_type = int(cfg_vbox['machine']['network_attachement_type'])
-        self.bridged_interface = cfg_vbox['machine']['network_bridged_interface']
+        self.network_bridged_interface = cfg_vbox['machine']['network_bridged_interface']
+        self.network_internal_network = cfg_vbox['machine']['network_internal_network']
+        self.network_host_only_interface = cfg_vbox['machine']['network_host_only_interface']
+
+        self.network_host_only_interface_enable_type = int(
+            cfg_vbox['machine']['network_host_only_interface_enable_type'])
+        self.network_host_only_interface_static_ip_config_ip_address = \
+            cfg_vbox['machine']['network_host_only_interface_static_ip_config_ip_address']
+        self.network_host_only_interface_static_ip_config_network_mask = \
+            cfg_vbox['machine']['network_host_only_interface_static_ip_config_network_mask']
+        self.network_host_only_interface_static_ip_config_v6_ip_address = \
+            cfg_vbox['machine']['network_host_only_interface_static_ip_config_v6_ip_address']
+        self.network_host_only_interface_static_ip_config_v6_network_mask = \
+            cfg_vbox['machine']['network_host_only_interface_static_ip_config_v6_network_mask']
+
+        self.network_host_only_interface_dhcp_enable = bool(
+            cfg_vbox['machine']['network_host_only_interface_dhcp_enable'])
+        self.network_host_only_interface_dhcp_ip_address = \
+            cfg_vbox['machine']['network_host_only_interface_dhcp_ip_address']
+        self.network_host_only_interface_dhcp_network_mask = \
+            cfg_vbox['machine']['network_host_only_interface_dhcp_network_mask']
+        self.network_host_only_interface_dhcp_lower_ip_address = \
+            cfg_vbox['machine']['network_host_only_interface_dhcp_lower_ip_address']
+        self.network_host_only_interface_dhcp_upper_ip_address = \
+            cfg_vbox['machine']['network_host_only_interface_dhcp_upper_ip_address']
 
     def __create_with_ova(self):
         """
@@ -106,36 +130,85 @@ class MachineVbox(Machine):
         __session.machine.description = "Created with " + cfg['app']['name'] + " on the " + datetime.datetime.now(). \
             strftime('%Y-%m-%d at %H:%M:%S.%f') + "\nBased on the appliance: " + self.ova_appliance_name
 
-        adapter = __session.machine.get_network_adapter(0)
-        adapter.attachment_type = NetworkAttachmentType(self.network_attachement_type)
+        __adapter = __session.machine.get_network_adapter(0)
+        __adapter.attachment_type = NetworkAttachmentType(self.network_attachement_type)
 
-        adapters_host = ifaddr.get_adapters()
+        # adapters_host = ifaddr.get_adapters()
+        # for adapter in __adapters_host:
+        #     print(adapter.name)
 
         if self.network_attachement_type == 1:
             # NAT
             pass
         elif self.network_attachement_type == 2:
             # Bridged
-            if self.bridged_interface == "default" or self.bridged_interface == "":
+            if self.network_bridged_interface == "default" or self.network_bridged_interface == "":
                 # use the first network adapter of the operating system
-                adapter_host = get_network_card(adapters_host.__getitem__(0).nice_name)
+                __selected_adapter_host = self.verify_network_card(name=self.__get_network_cards.__getitem__(0).name)
             else:
-                adapter_host = get_network_card(self.bridged_interface)
+                # use the network adapter defined in the configuration
+                __selected_adapter_host = self.verify_network_card(name=self.network_bridged_interface)
 
-            if adapter_host is not None:
-                adapter.bridged_interface = adapter_host.nice_name
-            else:
+            if __selected_adapter_host is None:
                 logger.warning("The network card for bridge access does not exist")
                 utils.stop_program()
+
+            __adapter.bridged_interface = __selected_adapter_host.name
+
         elif self.network_attachement_type == 3:
             # Internal
-            pass
+            __adapter.internal_network = self.network_internal_network
         elif self.network_attachement_type == 4:
             # Host Only
-            pass
+            if self.network_host_only_interface == "":
+                # create a new network interface
+                __host = virtualbox.library.IHost(self.vbox.host)
+                # BUG: Values are reversed, use host_interface first
+                try:
+                    __host_interface, __progress = __host.create_host_only_network_interface()
+                except OleErrorInvalidarg:
+                    logger.warning("The network card already exists: " + __host_interface.id_p)
+                    utils.stop_program()
+
+                __progress.wait_for_completion(-1)
+
+                __selected_adapter_host = self.__verify_network_card(name=__host_interface.id_p)
+                logger.info("New network card created: " + __host_interface.id_p)
+                __adapter.host_only_interface = __selected_adapter_host.name
+
+                if self.network_host_only_interface_enable_type == 1:
+                    __selected_adapter_host.enable_static_ip_config(
+                        self.network_host_only_interface_static_ip_config_ip_address,
+                        self.network_host_only_interface_static_ip_config_network_mask)
+                elif self.network_host_only_interface_enable_type == 2:
+                    __selected_adapter_host.enable_static_ip_config_v6(
+                        self.network_host_only_interface_static_ip_config_v6_ip_address,
+                        self.network_host_only_interface_static_ip_config_v6_network_mask)
+                elif self.network_host_only_interface_enable_type == 3:
+                    __selected_adapter_host.enable_dynamic_ip_config()
+
+                if self.network_host_only_interface_dhcp_enable:
+                    try:
+                        __dhcp = self.vbox.find_dhcp_server_by_network_name(__selected_adapter_host.name)
+                    except:
+                        __dhcp = self.vbox.create_dhcp_server(__selected_adapter_host.name)
+
+                    if __dhcp:
+                        __dhcp.set_configuration(ip_address=self.network_host_only_interface_dhcp_ip_address,
+                                               network_mask=self.network_host_only_interface_dhcp_network_mask,
+                                               from_ip_address=self.network_host_only_interface_dhcp_lower_ip_address,
+                                               to_ip_address=self.network_host_only_interface_dhcp_upper_ip_address)
+                        __dhcp.enabled = True
+                        __dhcp.start(__selected_adapter_host.network_name, __selected_adapter_host.name, "netadp")
+            else:
+                # use the network adapter defined in the configuration
+                __selected_adapter_host = self.__verify_network_card(name=self.network_host_only_interface)
+                __adapter.host_only_interface = __selected_adapter_host.name
+
         elif self.network_attachement_type == 5:
             # Generic
             pass
+
         elif self.network_attachement_type == 6:
             # NAT Network
             pass
@@ -272,3 +345,30 @@ class MachineVbox(Machine):
             utils.stop_program()
 
         return __vm
+
+    def __verify_network_card(self, name):
+        """
+        Check that the network card is valid
+        """
+        __host_network_cards = self.__get_network_cards()
+
+        for adapter in __host_network_cards:
+            if adapter.name == name:
+                return adapter
+
+        logger.warning("The network card for host only does not exist")
+        utils.stop_program()
+
+        return None
+
+    def __get_network_cards(self):
+        __host = virtualbox.library.IHost(self.vbox.host)
+        __adapters_host = __host.network_interfaces
+
+        if not isinstance(__adapters_host, list):
+            raise TypeError("network_cards can only be an instance of type list")
+        for a in __adapters_host[:10]:
+            if not isinstance(a, IHostNetworkInterface):
+                raise TypeError("array can only contain objects of type IHostNetworkInterface")
+
+        return __adapters_host

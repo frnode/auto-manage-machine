@@ -1,4 +1,3 @@
-ifaddr
 coloredlogs
 virtualbox
 pywin32
