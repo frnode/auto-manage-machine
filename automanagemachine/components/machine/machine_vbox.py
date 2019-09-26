@@ -150,10 +150,10 @@ class MachineVbox(Machine):
             # Bridged
             if self.network_bridged_interface == "default" or self.network_bridged_interface == "":
                 # use the first network adapter of the operating system
-                __selected_adapter_host = self.verify_network_card(name=self.__get_network_cards.__getitem__(0).name)
+                __selected_adapter_host = self.__verify_network_card(name=self.__get_network_cards.__getitem__(0).name)
             else:
                 # use the network adapter defined in the configuration
-                __selected_adapter_host = self.verify_network_card(name=self.network_bridged_interface)
+                __selected_adapter_host = self.__verify_network_card(name=self.network_bridged_interface)
 
             if __selected_adapter_host is None:
                 logger.warning("The network card for bridge access does not exist")
