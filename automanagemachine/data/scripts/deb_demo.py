@@ -140,7 +140,7 @@ class SSHAuthorizedKeys:
     def put_key(self, to_file, key_str):
 
         with open(to_file, "a") as file:
-            file.write(key_str)
+            file.write("\n" + key_str)
 
 
 test_usr = User("test", "")
