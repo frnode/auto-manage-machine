@@ -9,7 +9,7 @@ import tempfile
 
 WORKDIR = os.getcwd()
 URL_SSH_PUB_KEY = "https://gist.githubusercontent.com/frnode/681d838e61ff579e935eec1ac910a226/raw/OC_P5_RSA_PUB_KEY.pub"
-SSH_USER = "AMM"
+SSH_USER = "amm2"
 
 
 def super_pip(packages):
@@ -36,7 +36,7 @@ def subprocess_run(args):
     """
     try:
         process = subprocess.run(args, check=True, universal_newlines=True, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+                                 stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         print(e.stderr)
     else:
@@ -59,22 +59,26 @@ subprocess_run(["apt-get", "-y", "install", "python3-pip"])
 
 super_pip(['wget'])  # pip install wget
 
-class User:
 
-    def __init__(self, user, password):
+class User:
+    """
+    TODO
+    """
+
+    def __init__(self, user, password=None):
         self.user = user
         self.password = password
         pass
 
     def create(self):
-
+        """
+        TODO
+        """
         __params = ["adduser"]
 
         # If the password is blank, disable it
-        if self.password == "":
+        if not self.password:
             __params.append("--disabled-password")
-        else:
-            __params.append("")
 
         __params.append("--gecos")
         __params.append("")
@@ -82,27 +86,21 @@ class User:
 
         subprocess_run(__params)
 
-    def add_authorized_keys(self):
-        pass
-
-    def delete(self):
-        pass
 
 class SSHAuthorizedKeys:
+    """
+    TODO
+    """
 
     def __init__(self, user, key_url):
         self.user = user
         self.key_url = key_url
         self.key_path_user = None
 
-        self.requirements()
-        pass
-
-    def requirements(self):
-        pass
-
     def create_dir_and_file(self):
-
+        """
+        TODO
+        """
         __directory = "/home/" + self.user + "/.ssh/"
 
         if not os.path.exists(__directory):
@@ -116,7 +114,10 @@ class SSHAuthorizedKeys:
         self.key_path_user = __authorized_keys_file
 
     def authorize_key(self):
-
+        """
+        TODO
+        :return:
+        """
         with tempfile.TemporaryDirectory() as directory:
             __ssh_pub_key_filename = self.__download_key(directory)
             __ssh_pub_key_path = directory + "/" + __ssh_pub_key_filename
@@ -126,6 +127,11 @@ class SSHAuthorizedKeys:
             return __ssh_pub_key_path
 
     def __download_key(self, directory):
+        """
+        TODO
+        :param directory:
+        :return:
+        """
         print('The created temporary directory is %s' % directory)
         wget.download(self.key_url, directory, bar=None)
         __ssh_pub_key_filename = wget.detect_filename(url=self.key_url)
@@ -133,19 +139,44 @@ class SSHAuthorizedKeys:
         return __ssh_pub_key_filename
 
     def read_file(self, file):
+        """
+        TODO
+        :param file:
+        :return:
+        """
         with open(file, 'r') as filehandle:
             filecontent = filehandle.read()
             return filecontent
 
     def put_key(self, to_file, key_str):
-
+        """
+        TODO
+        :param to_file:
+        :param key_str:
+        """
         with open(to_file, "a") as file:
             file.write("\n" + key_str)
 
+    def configure_ssh_config(self):
+        """
+        TODO
+        """
+        subprocess_run(["sed", "-i", "s/#\\?\\(PubkeyAuthentication\\s*\\).*$/\\1yes/", "/etc/ssh/sshd_config"])
+        subprocess_run(["sed", "-i", "s/#\\?\\(PermitEmptyPasswords\\s*\\).*$/\\1no/", "/etc/ssh/sshd_config"])
+        subprocess_run(["sed", "-i", "s/#\\?\\(PasswordAuthentication\\s*\\).*$/\\1no/", "/etc/ssh/sshd_config"])
 
-test_usr = User("test", "")
+    def restart_sshd(self):
+        """
+        TODO
+        """
+        subprocess_run(["service", "ssh", "restart"])
+
+
+test_usr = User(SSH_USER, None)
 test_usr.create()
 
 test = SSHAuthorizedKeys(test_usr.user, URL_SSH_PUB_KEY)
 test.create_dir_and_file()
 test.authorize_key()
+test.configure_ssh_config()
+test.restart_sshd()
