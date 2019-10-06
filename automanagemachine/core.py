@@ -13,8 +13,6 @@ cfg_vbox.read('config/config_vbox.ini')
 
 # create logger
 logger = logging.getLogger(cfg['app']['name'])
-
-
 logger.setLevel(logging.DEBUG)
 
 # create console handler and set level to debug
@@ -31,7 +29,8 @@ ch.setFormatter(formatter)
 
 # add ch to logger
 logger.addHandler(ch)
-logging.basicConfig(filename=cfg['app']['name'] + ".log", filemode='w', format=format_logger, datefmt=format_logger_time)
+logging.basicConfig(filename=cfg['app']['name'] + ".log", filemode='w', format=format_logger,
+                    datefmt=format_logger_time)
 coloredlogs.install(level='DEBUG', logger=logger, fmt=format_logger)
 
 # 'application' code

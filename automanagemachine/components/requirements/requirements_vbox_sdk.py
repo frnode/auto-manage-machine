@@ -43,7 +43,7 @@ class RequirementsVboxSdk(Requirements):
         """
         Prerequisites vbox sdk
         """
-        if self.sdk_version == "latest":
+        if self.sdk_version.lower() == "latest":  # If the last one was set in the configuration
             self.sdk_latest_stable_version = self.__vbox_sdk_get_latest_stable_version()
             self.sdk_version = self.sdk_latest_stable_version
             logger.info("Starting the vbox configuration using the latest version of the SDK: " +
@@ -74,24 +74,26 @@ class RequirementsVboxSdk(Requirements):
         """
         __sdk_dir_exist = os.path.isdir(self.sdk_directory)
 
-        if __sdk_dir_exist:  # Check if the version that exists is equal to the version of the configuration file
+        if __sdk_dir_exist:  # Check if the "vboxapi" folder exists
             __file_version = self.sdk_directory + "/" + "version.txt"
-            if os.path.exists(__file_version):
+            if os.path.exists(__file_version):  # Check if the "version.txt" file exists
+                logger.info("Check if the version that exists is equal to the version of the configuration file")
                 with open(__file_version, 'rb') as f:
                     try:
                         __version_vbox_sdk = f.read().decode("utf8")
                     except:
-                        logger.info("Check if the version that exists is equal to the version of the configuration "
-                                    "file")
+                        logger.info("Can not read the file: " + __file_version)
                         utils.stop_program()
 
+                # Check if the version that exists is equal to the version of the configuration file
                 if __version_vbox_sdk != version:
                     try:
-                        shutil.rmtree(self.sdk_directory)
+                        shutil.rmtree(self.sdk_directory)  # Delete the folder
                     except shutil.Error:
                         logger.warning("Can remove the folder: " + self.sdk_directory)
-
-                    self.__vbox_sdk_exist(__version_vbox_sdk)
+                    finally:
+                        return self.__vbox_sdk_exist(
+                            __version_vbox_sdk)  # Restart the process to download the requested version
 
             logger.info('The API already exists, let\'s continue')
         else:
@@ -102,7 +104,7 @@ class RequirementsVboxSdk(Requirements):
     def __vbox_sdk_get_latest_stable_version(self):
         """
         Get latest stable version of vbox sdk
-        :return: Last stable release
+        :return: Last stable release, retrieved from the internet
         """
         __latest_stable_version_request = urllib.request.Request(self.sdk_url_latest_stable_version)
         with urllib.request.urlopen(__latest_stable_version_request) as response:
@@ -177,19 +179,18 @@ class RequirementsVboxSdk(Requirements):
             utils.stop_program()
 
         logger.info("The file has been downloaded")
-
         return __file[0]
 
     def __vbox_sdk_install(self, file_zip_sdk):
         """
         Installing the VBOX API
         """
-
-        utils.unzip_file(file=file_zip_sdk, to="./tmp/")
+        utils.unzip_file(file=file_zip_sdk, to="./tmp/")  # Unzip the file
 
         __path_script = os.getcwd() + "/tmp/sdk/installer/"
         __path_script_final = __path_script + "vboxapisetup.py install"
 
+        # Launch the vbox SDK installation script
         utils.run_python_script(__path_script_final, path_to_run=__path_script)
 
         __source_directory = __path_script + "build/lib/vboxapi"
@@ -218,6 +219,7 @@ class RequirementsVboxSdk(Requirements):
         logger.info("Creating the file containing the SDK version")
 
         try:
+            # Create the "version.txt" file containing the version number downloaded
             with open(__dest_directory + "version.txt", "w") as outfile:
                 outfile.write(self.sdk_version)
 
