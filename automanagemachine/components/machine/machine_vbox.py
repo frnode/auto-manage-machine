@@ -2,9 +2,6 @@
 # coding: utf-8
 import datetime
 import os
-import time
-
-import ifaddr
 import virtualbox
 from virtualbox.library import VBoxErrorIprtError, VBoxErrorObjectNotFound, OleErrorUnexpected, OleErrorInvalidarg, \
     VBoxErrorInvalidObjectState, VBoxErrorVmError, VBoxErrorMaximumReached, VBoxErrorFileError, VBoxErrorXmlError, \
@@ -117,7 +114,7 @@ class MachineVbox(Machine):
 
         logger.info("Machine created: " + self.name)
 
-    def __modify(self):
+    def __configure(self):
         """
         Edit the created machine to set parameters
         """
@@ -211,7 +208,7 @@ class MachineVbox(Machine):
                         __dhcp.enabled = True
                         __dhcp.start(__selected_adapter_host.network_name, __selected_adapter_host.name, "netadp")
             else:
-                # use the network adapter defined in the configuration
+                # Use an existing host only configuration and use the network adapter defined in the configuration
                 __selected_adapter_host = self.__verify_network_card(name=self.network_host_only_interface)
                 __adapter.host_only_interface = __selected_adapter_host.name
 
@@ -250,7 +247,7 @@ class MachineVbox(Machine):
         """
         Machine.create(self)
         self.__create_with_ova()
-        self.__modify()
+        self.__configure()
 
     def run(self):
         """
@@ -307,7 +304,7 @@ class MachineVbox(Machine):
         """
         Machine.run_command(self)
         try:
-            guest_session = __session.console.guest.create_session(self.username, self.password)
+            __guest_session = __session.console.guest.create_session(self.username, self.password)
         except VBoxErrorIprtError:
             logger.warning("Error creating guest session")
             utils.stop_program()
@@ -317,9 +314,9 @@ class MachineVbox(Machine):
 
         if self.script_copy_to_guest:
             __tmp_file_to_guest = os.getcwd() + "/data/scripts/" + self.script_copy_to_guest
-            __tmp_file_copy = guest_session.file_copy_to_guest(__tmp_file_to_guest, ".", [FileCopyFlag(0)])
+            __tmp_file_copy = __guest_session.file_copy_to_guest(__tmp_file_to_guest, ".", [FileCopyFlag(0)])
 
-        proc, stdout, stderr = guest_session.execute(self.command, self.command_args)
+        proc, stdout, stderr = __guest_session.execute(self.command, self.command_args)
 
         logger.info("Result of the script/command:")
         logger.info(stdout)
@@ -333,6 +330,7 @@ class MachineVbox(Machine):
         for __vm_name in self.vbox.machines:
             if str(__vm_name) == name:
                 return True
+
         return False
 
     def __generate_name(self, original_name):
@@ -352,7 +350,7 @@ class MachineVbox(Machine):
     def __find_vm_by_uuid_or_name(self, uuid_or_name):
         """
         Look for a machine and return it
-        :param uuid_or_uuid: Name of the machine or UUID
+        :param uuid_or_name: Name of the machine or UUID
         :return: If the machine exists, return the machine
         """
         try:
@@ -366,6 +364,8 @@ class MachineVbox(Machine):
     def __verify_network_card(self, name):
         """
         Check that the network card is valid
+        :param name: Name of the network card
+        :return: Network adapter object or None
         """
         __host_network_cards = self.__get_network_cards()
 
@@ -375,12 +375,13 @@ class MachineVbox(Machine):
 
         logger.warning("The network card for host only does not exist")
         utils.stop_program()
-
         return None
 
     def __verify_nat_network(self, network_name):
         """
         Check nat network is valid
+        :param network_name: Name of the network
+        :return: Nat object or None
         """
         __nat_networks = self.vbox.nat_networks
 
@@ -391,6 +392,10 @@ class MachineVbox(Machine):
         return None
 
     def __get_network_cards(self):
+        """
+        Returns the network cards of the hosts
+        :return: List of network cards of the hosts
+        """
         __host = virtualbox.library.IHost(self.vbox.host)
         __adapters_host = __host.network_interfaces
 
