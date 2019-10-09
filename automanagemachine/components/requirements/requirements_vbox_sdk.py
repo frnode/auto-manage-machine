@@ -210,7 +210,7 @@ class RequirementsVboxSdk(Requirements):
         logger.debug("Directory '" + __dest_directory + "' created")
 
         # test
-        for root, dirs, files in os.walk(__source_directory):
+        for root, dirs, files in os.walk(MODULE_DIR):
             for filename in files:
                 print(filename)
 
