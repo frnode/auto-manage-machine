@@ -192,9 +192,9 @@ class RequirementsVboxSdk(Requirements):
         __path_script_final = __path_script + "vboxapisetup.py install"
 
         # Launch the vbox SDK installation script
-        utils.run_python_script(__path_script_final, path_to_run=__path_script)
+        utils.run_python_script(__path_script_final, path_to_run=__path_script, output=True)
 
-        __source_directory = __path_script + "build/lib/vboxapi/"
+        __source_directory = __path_script + "vboxapi/"
         __vboxapi_directory = self.sdk_directory
         __dest_directory = __vboxapi_directory + "/"
 
@@ -210,30 +210,17 @@ class RequirementsVboxSdk(Requirements):
         os.mkdir(__dest_directory)
         logger.debug("Directory '" + __dest_directory + "' created")
 
-        # test
-        for dirname, dirnames, filenames in os.walk('.'):
-            # print path to all subdirectories first.
-            for subdirname in dirnames:
-                print(os.path.join(dirname, subdirname))
-
-            # print path to all filenames.
-            for filename in filenames:
-                print(os.path.join(dirname, filename))
-
-            # Advanced usage:
-            # editing the 'dirnames' list will stop os.walk() from recursing into there.
-            if '.git' in dirnames:
-                # don't go into any .git directories.
-                dirnames.remove('.git')
-
         try:
-            shutil.move(__source_directory, __dest_directory)
-        except (shutil.Error, FileNotFoundError):
+            # shutil.move(__source_directory, __dest_directory)
+            files = os.listdir(__source_directory)
+            for f in files:
+                shutil.move(__source_directory + f, __dest_directory)
+        except (shutil.Error, FileNotFoundError, PermissionError):
             logger.warning("Can not move the folder: " + __source_directory + " to " + __dest_directory)
 
         try:
             shutil.rmtree(self.tmp_directory)
-        except (shutil.Error, FileNotFoundError):
+        except (shutil.Error, FileNotFoundError, PermissionError):
             logger.warning("Can remove the folder: " + self.tmp_directory)
 
         logger.info("Creating the file containing the SDK version")
