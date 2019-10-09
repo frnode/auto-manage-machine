@@ -2,14 +2,18 @@
 # coding: utf-8
 import configparser
 import logging
+from os.path import dirname, abspath, join
 
 import coloredlogs
 
+BASE_DIR = dirname(dirname(abspath(__file__)))
+MODULE_DIR = join(BASE_DIR, 'automanagemachine/')
+
 cfg = configparser.ConfigParser()  # initialize configparser with the cfg variable
-cfg.read('config/config.ini')
+cfg.read(MODULE_DIR + 'config/config.ini')
 
 cfg_vbox = configparser.ConfigParser()  # initialize configparser with the cfg_vbox variable
-cfg_vbox.read('config/config_vbox.ini')
+cfg_vbox.read(MODULE_DIR + 'config/config_vbox.ini')
 
 # create logger
 logger = logging.getLogger(cfg['app']['name'])
@@ -29,7 +33,7 @@ ch.setFormatter(formatter)
 
 # add ch to logger
 logger.addHandler(ch)
-logging.basicConfig(filename=cfg['app']['name'] + ".log", filemode='w', format=format_logger,
+logging.basicConfig(filename=BASE_DIR + "/" + cfg['app']['name'] + ".log", filemode='w', format=format_logger,
                     datefmt=format_logger_time)
 coloredlogs.install(level='DEBUG', logger=logger, fmt=format_logger)
 

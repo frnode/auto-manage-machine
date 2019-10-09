@@ -7,7 +7,7 @@ import urllib.request
 import urllib.response
 
 from automanagemachine.components import utils
-from automanagemachine.core import logger, cfg, cfg_vbox
+from automanagemachine.core import logger, cfg, cfg_vbox, MODULE_DIR
 from automanagemachine.components.requirements.requirements import Requirements
 
 
@@ -22,8 +22,8 @@ class RequirementsVboxSdk(Requirements):
         self.sdk_version = cfg_vbox['sdk_virtualbox']['vbox_sdk']
         self.sdk_url_latest_stable_version = cfg_vbox['sdk_virtualbox']['vbox_url_latest_stable_version']
         self.sdk_latest_stable_version = None
-        self.tmp_directory = os.getcwd() + "/tmp"
-        self.sdk_directory = os.getcwd() + "/vboxapi"
+        self.tmp_directory = MODULE_DIR + "/tmp"
+        self.sdk_directory = MODULE_DIR + "/vboxapi"
         self.run()
 
     def run(self):
@@ -185,9 +185,9 @@ class RequirementsVboxSdk(Requirements):
         """
         Installing the VBOX API
         """
-        utils.unzip_file(file=file_zip_sdk, to="./tmp/")  # Unzip the file
+        utils.unzip_file(file=file_zip_sdk, to=MODULE_DIR + "tmp/")  # Unzip the file
 
-        __path_script = os.getcwd() + "/tmp/sdk/installer/"
+        __path_script = MODULE_DIR + "/tmp/sdk/installer/"
         __path_script_final = __path_script + "vboxapisetup.py install"
 
         # Launch the vbox SDK installation script

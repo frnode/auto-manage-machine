@@ -10,7 +10,7 @@ from virtualbox.library_base import VBoxError
 
 from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
-from automanagemachine.core import cfg, logger, cfg_vbox
+from automanagemachine.core import cfg, logger, cfg_vbox, MODULE_DIR
 
 
 class MachineVbox(Machine):
@@ -69,7 +69,7 @@ class MachineVbox(Machine):
         Create a virtual machine under virtualbox using a .OVA file
         The name of the OVA appliance will be modified using the configuration file
         """
-        __ova_file = os.getcwd() + "/data/ova/" + self.ova
+        __ova_file = MODULE_DIR + "/data/ova/" + self.ova
 
         logger.info(
             "Machine settings: Name: '" + self.name + "' - Group: '" + self.machine_group + "' - OS: '" + self.os + "'")
@@ -292,10 +292,6 @@ class MachineVbox(Machine):
 
         __session.unlock_machine()
 
-        # res = __vm.enumerate_guest_properties('/VirtualBox/GuestInfo/Net/0/V4/IP')
-        # ip = res[1][0]
-        # print(ip)
-
         logger.info("Machine started")
 
     def __run_command(self, __session):
@@ -317,7 +313,7 @@ class MachineVbox(Machine):
             utils.stop_program()
 
         if self.script_copy_to_guest:
-            __tmp_file_to_guest = os.getcwd() + "/data/scripts/" + self.script_copy_to_guest
+            __tmp_file_to_guest = MODULE_DIR + "/data/scripts/" + self.script_copy_to_guest
             __tmp_file_copy = __guest_session.file_copy_to_guest(__tmp_file_to_guest, self.script_copy_dest,
                                                                  [FileCopyFlag(0)])
 
