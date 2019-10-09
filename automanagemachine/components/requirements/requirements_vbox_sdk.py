@@ -22,8 +22,8 @@ class RequirementsVboxSdk(Requirements):
         self.sdk_version = cfg_vbox['sdk_virtualbox']['vbox_sdk']
         self.sdk_url_latest_stable_version = cfg_vbox['sdk_virtualbox']['vbox_url_latest_stable_version']
         self.sdk_latest_stable_version = None
-        self.tmp_directory = MODULE_DIR + "/tmp"
-        self.sdk_directory = MODULE_DIR + "/vboxapi"
+        self.tmp_directory = MODULE_DIR + "tmp"
+        self.sdk_directory = MODULE_DIR + "vboxapi"
         self.run()
 
     def run(self):
@@ -193,7 +193,7 @@ class RequirementsVboxSdk(Requirements):
         # Launch the vbox SDK installation script
         utils.run_python_script(__path_script_final, path_to_run=__path_script)
 
-        __source_directory = __path_script + "build/lib/vboxapi"
+        __source_directory = __path_script + "build/lib/vboxapi/"
         __vboxapi_directory = self.sdk_directory
         __dest_directory = __vboxapi_directory + "/"
 
@@ -203,17 +203,17 @@ class RequirementsVboxSdk(Requirements):
             logger.warning("Deleting the folder: " + __vboxapi_directory)
             try:
                 shutil.rmtree(__vboxapi_directory)
-            except shutil.Error:
+            except (shutil.Error, FileNotFoundError):
                 logger.warning("Can remove the folder: " + __vboxapi_directory)
 
         try:
             shutil.move(__source_directory, __dest_directory)
-        except shutil.Error:
+        except (shutil.Error, FileNotFoundError):
             logger.warning("Can not move the folder: " + __source_directory + " to " + __dest_directory)
 
         try:
             shutil.rmtree(self.tmp_directory)
-        except shutil.Error:
+        except (shutil.Error, FileNotFoundError):
             logger.warning("Can remove the folder: " + self.tmp_directory)
 
         logger.info("Creating the file containing the SDK version")

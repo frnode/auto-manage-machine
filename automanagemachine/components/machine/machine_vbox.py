@@ -69,7 +69,7 @@ class MachineVbox(Machine):
         Create a virtual machine under virtualbox using a .OVA file
         The name of the OVA appliance will be modified using the configuration file
         """
-        __ova_file = MODULE_DIR + "/data/ova/" + self.ova
+        __ova_file = MODULE_DIR + "data/ova/" + self.ova
 
         logger.info(
             "Machine settings: Name: '" + self.name + "' - Group: '" + self.machine_group + "' - OS: '" + self.os + "'")
@@ -313,7 +313,7 @@ class MachineVbox(Machine):
             utils.stop_program()
 
         if self.script_copy_to_guest:
-            __tmp_file_to_guest = MODULE_DIR + "/data/scripts/" + self.script_copy_to_guest
+            __tmp_file_to_guest = MODULE_DIR + "data/scripts/" + self.script_copy_to_guest
             __tmp_file_copy = __guest_session.file_copy_to_guest(__tmp_file_to_guest, self.script_copy_dest,
                                                                  [FileCopyFlag(0)])
 
