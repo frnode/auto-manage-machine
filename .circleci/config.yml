@@ -44,7 +44,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            python automanagemachine/run.py
+            python run.py
 
       - store_artifacts:
           path: test-reports
