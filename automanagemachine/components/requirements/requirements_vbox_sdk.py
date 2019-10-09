@@ -194,6 +194,7 @@ class RequirementsVboxSdk(Requirements):
         __path_script_final = __path_script + "vboxapisetup.py install"
         __source_directory = __path_script + "build/lib/vboxapi/"
 
+        # Set permissions
         for root, dirs, files in os.walk(MODULE_DIR + "tmp/"):
             for d in dirs:
                 os.chmod(os.path.join(root, d), 0o755)
@@ -201,10 +202,12 @@ class RequirementsVboxSdk(Requirements):
                 os.chmod(os.path.join(root, f), 0o755)
 
         # Launch the vbox SDK installation script
-        if platform.system() != "Windows":
-            __source_directory = __path_script + "vboxapi/"
-
-        utils.run_python_script(__path_script_final, path_to_run=__path_script)
+        if platform.system() == "Windows":
+            # Windows support
+            utils.run_python_script(__path_script_final, path_to_run=__path_script)
+        else:
+            # TODO: Linux support
+            utils.run_python_script("python " + __path_script_final, path_to_run=__path_script)
 
         __vboxapi_directory = self.sdk_directory
         __dest_directory = __vboxapi_directory + "/"
