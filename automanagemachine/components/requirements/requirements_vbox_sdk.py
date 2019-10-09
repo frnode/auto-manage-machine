@@ -160,7 +160,7 @@ class RequirementsVboxSdk(Requirements):
         if os.path.isdir(self.tmp_directory):
             logger.debug("Directory '" + self.tmp_directory + "' already exists")
         else:
-            os.mkdir(self.tmp_directory)
+            os.mkdir(self.tmp_directory, 0o777)
             logger.debug("Directory '" + self.tmp_directory + "' created")
 
         logger.info("Downloading the " + __url_download + " file in progress...")
@@ -193,8 +193,14 @@ class RequirementsVboxSdk(Requirements):
         __path_script_final = __path_script + "vboxapisetup.py install"
         __source_directory = __path_script + "build/lib/vboxapi/"
 
-        __vboxapi_setup_file = __path_script + 'vboxapisetup.py'
-        os.chmod(__vboxapi_setup_file, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        for root, dirs, files in os.walk(MODULE_DIR + "tmp/"):
+            for d in dirs:
+                os.chmod(os.path.join(root, d), 0o777)
+            for f in files:
+                os.chmod(os.path.join(root, f), 0o777)
+
+        # __vboxapi_setup_file = __path_script + "vboxapisetup.py"
+        # os.chmod(__vboxapi_setup_file, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
         # Launch the vbox SDK installation script
         utils.run_python_script(__path_script_final, path_to_run=__path_script, output=True)
@@ -212,11 +218,9 @@ class RequirementsVboxSdk(Requirements):
                 logger.warning("Can remove the folder: " + __vboxapi_directory)
 
         os.mkdir(__dest_directory)
-
         logger.debug("Directory '" + __dest_directory + "' created")
 
         try:
-            # shutil.move(__source_directory, __dest_directory)
             files = os.listdir(__source_directory)
             for f in files:
                 shutil.move(__source_directory + f, __dest_directory)
