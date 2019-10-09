@@ -210,15 +210,9 @@ class RequirementsVboxSdk(Requirements):
         logger.debug("Directory '" + __dest_directory + "' created")
 
         # test
-        files = []
-        # r=root, d=directories, f = files
-        for r, d, f in os.walk(__source_directory):
-            for file in f:
-                if '.txt' in file:
-                    files.append(os.path.join(r, file))
-
-        for f in files:
-            print(f)
+        for root, dirs, files in os.walk(__source_directory):
+            for filename in files:
+                print(filename)
 
         try:
             shutil.move(__source_directory, __dest_directory)
