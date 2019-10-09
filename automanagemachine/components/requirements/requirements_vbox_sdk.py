@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
+import glob
 import os
 import re
 import shutil
@@ -210,9 +211,9 @@ class RequirementsVboxSdk(Requirements):
         logger.debug("Directory '" + __dest_directory + "' created")
 
         # test
-        for root, dirs, files in os.walk(MODULE_DIR):
-            for filename in files:
-                print(filename)
+        files = [f for f in glob.glob(__vboxapi_directory + "**/*", recursive=True)]
+        for f in files:
+            print(f)
 
         try:
             shutil.move(__source_directory, __dest_directory)
