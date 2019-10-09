@@ -4,6 +4,7 @@ import glob
 import os
 import re
 import shutil
+import stat
 import urllib.request
 import urllib.response
 
@@ -194,7 +195,7 @@ class RequirementsVboxSdk(Requirements):
         # Launch the vbox SDK installation script
         utils.run_python_script(__path_script_final, path_to_run=__path_script, output=True)
 
-        __source_directory = __path_script + "vboxapi/"
+        __source_directory = __path_script + "build/lib/vboxapi/"
         __vboxapi_directory = self.sdk_directory
         __dest_directory = __vboxapi_directory + "/"
 
@@ -208,6 +209,10 @@ class RequirementsVboxSdk(Requirements):
                 logger.warning("Can remove the folder: " + __vboxapi_directory)
 
         os.mkdir(__dest_directory)
+
+        __vboxapi_setup_file = __dest_directory + 'vboxapisetup.py'
+        os.chmod(__vboxapi_setup_file, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
         logger.debug("Directory '" + __dest_directory + "' created")
 
         try:
