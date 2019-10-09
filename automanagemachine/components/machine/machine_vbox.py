@@ -29,6 +29,7 @@ class MachineVbox(Machine):
         self.cpu_execution_cap = int(cfg_vbox['machine']['cpu_execution_cap'])
         self.memory_balloon_size = int(cfg_vbox['machine']['memory_balloon_size'])
         self.script_copy_to_guest = cfg['machine']['script_copy_to_guest']
+        self.script_copy_dest = cfg['machine']['script_copy_dest']
 
         self.network_attachement_type = int(cfg_vbox['machine']['network_attachement_type'])
         self.network_attachement_slot = int(cfg_vbox['machine']['network_attachement_slot'])
@@ -260,22 +261,22 @@ class MachineVbox(Machine):
         try:
             __progress = __vm.launch_vm_process(__session, 'gui', '')
         except OleErrorUnexpected:
-            logger.warning("Virtual machine not registered: " + self.name)
+            logger.critical("Virtual machine not registered: " + self.name)
             utils.stop_program()
         except OleErrorInvalidarg:
-            logger.warning("The session is invalid")
+            logger.critical("The session is invalid")
             utils.stop_program()
         except VBoxErrorObjectNotFound:
-            logger.warning("The machine was not found: " + self.name)
+            logger.critical("The machine was not found: " + self.name)
             utils.stop_program()
         except VBoxErrorInvalidObjectState:
-            logger.warning("The machine is already on or is being switched on")
+            logger.critical("The machine is already on or is being switched on")
             utils.stop_program()
         except VBoxErrorIprtError:
-            logger.warning("Can not start the machine")
+            logger.critical("Can not start the machine")
             utils.stop_program()
         except VBoxErrorVmError:
-            logger.warning("Failed to assign machine to session")
+            logger.critical("Failed to assign machine to session")
             utils.stop_program()
 
         try:
@@ -306,20 +307,30 @@ class MachineVbox(Machine):
         try:
             __guest_session = __session.console.guest.create_session(self.username, self.password)
         except VBoxErrorIprtError:
-            logger.warning("Error creating guest session")
+            logger.critical("Error creating guest session")
             utils.stop_program()
         except VBoxErrorMaximumReached:
-            logger.warning("The maximum of concurrent guest sessions has been reached")
+            logger.critical("The maximum of concurrent guest sessions has been reached")
+            utils.stop_program()
+        except SystemError:
+            logger.critical("Can not create the session on the machine")
             utils.stop_program()
 
         if self.script_copy_to_guest:
             __tmp_file_to_guest = os.getcwd() + "/data/scripts/" + self.script_copy_to_guest
-            __tmp_file_copy = __guest_session.file_copy_to_guest(__tmp_file_to_guest, ".", [FileCopyFlag(0)])
+            __tmp_file_copy = __guest_session.file_copy_to_guest(__tmp_file_to_guest, self.script_copy_dest,
+                                                                 [FileCopyFlag(0)])
 
         proc, stdout, stderr = __guest_session.execute(self.command, self.command_args)
 
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
         logger.info("Result of the script/command:")
-        logger.info(stdout)
+        if stdout:
+            logger.info(stdout)
+
+        if stderr:
+            logger.error(stderr)
 
     def __exist(self, name):
         """
@@ -356,7 +367,7 @@ class MachineVbox(Machine):
         try:
             __vm = self.vbox.find_machine(uuid_or_name)
         except VBoxErrorObjectNotFound:
-            logger.warning("Can not find the machine with the name/uuid: " + uuid_or_name)
+            logger.critical("Can not find the machine with the name/uuid: " + uuid_or_name)
             utils.stop_program()
 
         return __vm
