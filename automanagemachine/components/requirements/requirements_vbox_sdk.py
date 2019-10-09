@@ -2,6 +2,7 @@
 # coding: utf-8
 import glob
 import os
+import platform
 import re
 import shutil
 import stat
@@ -195,15 +196,18 @@ class RequirementsVboxSdk(Requirements):
 
         for root, dirs, files in os.walk(MODULE_DIR + "tmp/"):
             for d in dirs:
-                os.chmod(os.path.join(root, d), 0o777)
+                os.chmod(os.path.join(root, d), 0o755)
             for f in files:
-                os.chmod(os.path.join(root, f), 0o777)
+                os.chmod(os.path.join(root, f), 0o755)
 
         # __vboxapi_setup_file = __path_script + "vboxapisetup.py"
         # os.chmod(__vboxapi_setup_file, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
         # Launch the vbox SDK installation script
-        utils.run_python_script(__path_script_final, path_to_run=__path_script, output=True)
+        if platform.system() == "Windows":
+            utils.run_python_script(__path_script_final, path_to_run=__path_script)
+        else:
+            utils.run_python_script("python3 " + __path_script_final, path_to_run=__path_script)
 
         __vboxapi_directory = self.sdk_directory
         __dest_directory = __vboxapi_directory + "/"
