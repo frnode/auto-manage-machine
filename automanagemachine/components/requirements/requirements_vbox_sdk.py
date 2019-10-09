@@ -200,14 +200,11 @@ class RequirementsVboxSdk(Requirements):
             for f in files:
                 os.chmod(os.path.join(root, f), 0o755)
 
-        # __vboxapi_setup_file = __path_script + "vboxapisetup.py"
-        # os.chmod(__vboxapi_setup_file, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-
         # Launch the vbox SDK installation script
-        if platform.system() == "Windows":
-            utils.run_python_script(__path_script_final, path_to_run=__path_script)
-        else:
-            utils.run_python_script("python3 " + __path_script_final, path_to_run=__path_script)
+        if platform.system() != "Windows":
+            __source_directory = __path_script + "vboxapi/"
+
+        utils.run_python_script(__path_script_final, path_to_run=__path_script)
 
         __vboxapi_directory = self.sdk_directory
         __dest_directory = __vboxapi_directory + "/"
