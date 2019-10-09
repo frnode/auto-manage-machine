@@ -193,7 +193,7 @@ class RequirementsVboxSdk(Requirements):
         __path_script_final = __path_script + "vboxapisetup.py install"
         __source_directory = __path_script + "build/lib/vboxapi/"
 
-        __vboxapi_setup_file = __source_directory + 'vboxapisetup.py'
+        __vboxapi_setup_file = __path_script + 'vboxapisetup.py'
         os.chmod(__vboxapi_setup_file, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
         # Launch the vbox SDK installation script
