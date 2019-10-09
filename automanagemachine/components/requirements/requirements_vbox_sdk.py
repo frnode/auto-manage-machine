@@ -209,6 +209,17 @@ class RequirementsVboxSdk(Requirements):
         os.mkdir(__dest_directory)
         logger.debug("Directory '" + __dest_directory + "' created")
 
+        # test
+        files = []
+        # r=root, d=directories, f = files
+        for r, d, f in os.walk(__source_directory):
+            for file in f:
+                if '.txt' in file:
+                    files.append(os.path.join(r, file))
+
+        for f in files:
+            print(f)
+
         try:
             shutil.move(__source_directory, __dest_directory)
         except (shutil.Error, FileNotFoundError):
