@@ -11,7 +11,7 @@ After the installation of the machine, a command defined in the configuration fi
 ## How to use ?
 - Clone the repositories `git clone https://github.com/frnode/auto-manage-machine.git`
 - Look at the [requirements](https://github.com/frnode/auto-manage-machine#requirements) for what you want to do.
-- Define the different options in the [config.ini](https://github.com/frnode/auto-manage-machine/automanagemachine/config.ini) file
+- Define the different options in the [config.ini](https://github.com/frnode/auto-manage-machine/blob/dev/automanagemachine/config/config_vbox.ini) file
 - Finally, start the program `python automanagemachine/run.py`
 
 ## Requirements
@@ -22,8 +22,7 @@ _(The program probably works in other environments, it's up to you to try!)._
 - For **Virtualbox** (The only implemented for the moment)
     
     - Download Virtualbox in the desired version at this address: 
-     https://download.virtualbox.org/virtualbox/ 
-    - Or latest version: https://www.virtualbox.org/wiki/Downloads
+     https://download.virtualbox.org/virtualbox/ or latest version https://www.virtualbox.org/wiki/Downloads
     - `.OVA` template file in the folder `/data/ova` **(Virtualbox additions must be installed on the operating system.)**
     - Set the parameters specific to Virtualbox in the file `config/config_vbox.ini`
 
