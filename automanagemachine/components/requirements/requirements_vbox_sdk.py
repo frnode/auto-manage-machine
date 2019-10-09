@@ -206,6 +206,12 @@ class RequirementsVboxSdk(Requirements):
             except (shutil.Error, FileNotFoundError):
                 logger.warning("Can remove the folder: " + __vboxapi_directory)
 
+        if os.path.isdir(__vboxapi_directory):
+            logger.debug("Directory '" + __vboxapi_directory + "' already exists")
+        else:
+            os.mkdir(__vboxapi_directory)
+            logger.debug("Directory '" + __vboxapi_directory + "' created")
+
         try:
             shutil.move(__source_directory, __dest_directory)
         except (shutil.Error, FileNotFoundError):
