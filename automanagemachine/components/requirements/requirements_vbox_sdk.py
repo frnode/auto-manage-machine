@@ -187,7 +187,7 @@ class RequirementsVboxSdk(Requirements):
         """
         utils.unzip_file(file=file_zip_sdk, to=MODULE_DIR + "tmp/")  # Unzip the file
 
-        __path_script = MODULE_DIR + "/tmp/sdk/installer/"
+        __path_script = MODULE_DIR + "tmp/sdk/installer/"
         __path_script_final = __path_script + "vboxapisetup.py install"
 
         # Launch the vbox SDK installation script
