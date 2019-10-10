@@ -9,21 +9,7 @@ After the installation of the machine, a command defined in the configuration fi
 [![img](https://img.shields.io/pypi/v/pywin32?label=pywin32)](https://pypi.org/project/pywin32/)
    
 ## How to use ?
-- Clone the repositories `git clone https://github.com/frnode/auto-manage-machine.git`
-- Look at the [requirements](https://github.com/frnode/auto-manage-machine#requirements) for what you want to do.
-- Define the different options in the [config.ini](https://github.com/frnode/auto-manage-machine/blob/dev/automanagemachine/config/config_vbox.ini) file
-- Finally, start the program `python automanagemachine/run.py`
+* Read the **[Wiki](https://github.com/frnode/auto-manage-machine/wiki/(FR)-Accueil)**
 
-## Requirements
-Tested on `Windows 10 version 1903` with `Python 3.7` 
-_(The program probably works in other environments, it's up to you to try!)._ 
-**Open an issue if you encounter a problem.**
-
-- For **Virtualbox** (The only implemented for the moment)
-    
-    - Download Virtualbox in the desired version at this address: 
-     https://download.virtualbox.org/virtualbox/ or latest version https://www.virtualbox.org/wiki/Downloads
-    - `.OVA` template file in the folder `/data/ova` **(Virtualbox additions must be installed on the operating system.)**
-    - Set the parameters specific to Virtualbox in the file `config/config_vbox.ini`
-
-
+## License
+[GNU General Public License v3.0](https://github.com/frnode/auto-manage-machine/blob/master/LICENSE)
