@@ -9,7 +9,9 @@ After the installation of the machine, a command defined in the configuration fi
 [![img](https://img.shields.io/pypi/v/pywin32?label=pywin32)](https://pypi.org/project/pywin32/)
    
 ## How to use ?
-* Read the **[Wiki](https://github.com/frnode/auto-manage-machine/wiki/(FR)-Accueil)**
+* Read the **Wiki**:
+  * [Wiki EN translation](https://github.com/frnode/auto-manage-machine/wiki/(EN)-Home)
+  * [Wiki FR translation](https://github.com/frnode/auto-manage-machine/wiki/(FR)-Accueil)
 
 ## License
 [GNU General Public License v3.0](https://github.com/frnode/auto-manage-machine/blob/master/LICENSE)
