@@ -12,7 +12,6 @@ from automanagemachine.components import utils
 from automanagemachine.components.machine.machine import Machine
 from automanagemachine.core import cfg, logger, cfg_vbox, MODULE_DIR
 
-
 class MachineVbox(Machine):
     """
     Class inherited from Machine, it is used to initiate / conduct actions on a virtualbox machine

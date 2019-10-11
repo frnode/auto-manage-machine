@@ -10,8 +10,8 @@ After the installation of the machine, a command defined in the configuration fi
    
 ## How to use ?
 * Read the **Wiki**:
-  * [Wiki EN translation](https://github.com/frnode/auto-manage-machine/wiki/(EN)-Home)
-  * [Wiki FR translation](https://github.com/frnode/auto-manage-machine/wiki/(FR)-Accueil)
+  * [EN](https://github.com/frnode/auto-manage-machine/wiki/(EN)-Home)
+  * [FR](https://github.com/frnode/auto-manage-machine/wiki/(FR)-Accueil)
 
 ## License
 [GNU General Public License v3.0](https://github.com/frnode/auto-manage-machine/blob/master/LICENSE)
