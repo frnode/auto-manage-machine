@@ -8,9 +8,12 @@ import uuid
 import tempfile
 import re
 
-WORKDIR = os.getcwd()
-URL_SSH_PUB_KEY = "https://gist.githubusercontent.com/frnode/681d838e61ff579e935eec1ac910a226/raw/OC_P5_RSA_PUB_KEY.pub"
-SSH_USER = "amm"
+WORKDIR = os.getcwd()  # DON'T TOUCH
+
+# CONFIGURATION
+URL_SSH_PUB_KEY = "https://gist.githubusercontent.com/frnode/681d838e61ff579e935eec1ac910a226/raw/OC_P5_RSA_PUB_KEY.pub"  # SSH key URL
+SSH_USER = "amm"  # Name of the user to create
+DOMAIN = SSH_USER  # domain name, without "http(s)"
 
 
 def super_pip(packages, retry=False):
@@ -316,7 +319,6 @@ class Apache2:
         with open(__index_html_file, "w") as file:
             file.write(__index_html)
 
-
     def create_vhost(self, domain, folder):
         """
         Write the vhost file with the defined parameters
@@ -377,16 +379,19 @@ ssh.configure_sshd_config()
 
 apache = Apache2(user.user)
 apache.install()
-apache.create(user.user)
+apache.create(DOMAIN)
 
 print_console("END OF THE SCRIPT")
 print_console("Machine information")
 print("* Network interfaces: ")
 adapters = ifaddr.get_adapters()
-
 for adapter in adapters:
     print(adapter.nice_name)
     for ip in adapter.ips:
         print("   %s/%s" % (ip.ip, ip.network_prefix))
+
+print_console("SSH")
 print("* Session name: " + user.user)
 print("* Use your private key to connect")
+print_console("WEB")
+print("* Link created web space: " + DOMAIN)
