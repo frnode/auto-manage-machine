@@ -113,7 +113,7 @@ class RequirementsVboxSdk(Requirements):
                         logger.warning("Can remove the folder: " + self.sdk_directory)
                     finally:
                         return self.__vbox_sdk_exist(
-                            __version_vbox_sdk)  # Restart the process to download the requested version
+                            version)  # Restart the process to download the requested version
 
             logger.info('The API already exists, let\'s continue')
         else:
