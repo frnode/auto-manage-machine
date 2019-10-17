@@ -91,6 +91,7 @@ class RequirementsVboxSdk(Requirements):
     def __vbox_sdk_exist(self, version):
         """
         Check if the API already exists
+        :param version: version to be checked
         """
         __sdk_dir_exist = os.path.isdir(self.sdk_directory)
 
